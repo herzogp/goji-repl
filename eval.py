@@ -3,7 +3,6 @@ from enum import Enum
 
 from env import (
     EnvItem,
-    ItemType,
     define_item,
 )
 
@@ -52,11 +51,9 @@ def eval_atom(environment, atom):
     engine_id = environment.get_integer('engineVersion-id')
     engine_name = environment.get_text('engineVersion-name')[0]
     print(f"engineVersion: {engine_name}({engine_id})\n")
-    #print("engineVersion: %s\n" % engine_name)
     sub_item = atom.get_value()
     if sub_item.isident():
        env_name = sub_item.get_value()
-       print("eval_atom: Should lookup '%s' in the environment" % env_name)
 
        x = environment.get_item(env_name)
 
@@ -67,39 +64,24 @@ def eval_atom(environment, atom):
             return sub_item
 
        # x is an EnvItem with .name .typ and .value properties
-       print(type(x))
-       print("X is: ", x, "  its type is: ", type(x))
        if uses_atoms:
-           print("eval_atom: uses_atoms x: ", type(x), str(x))
            xval = x.value
            return xval
-           # [PH] print("eval_atom(env, '%s') returns %s with type: " % (env_name, xval),type(xval), "not using x.typ")
-           # [PH] if x.isfunction():
-           # [PH] #if x.typ == ItemType.FUNCTION:
-           # [PH]      return xval[0]
-           # [PH] return env_item_to_atom(x)
     return sub_item
 
 def eval_node(environment, node):
     if node.isatom():
         return eval_atom(environment, node)
     else:
-        print("this node(not an atom): ", node)
-        firstNodeItem = node.get_item(0)
-        print("firstNodeItem: ", firstNodeItem)
         operator = eval_node(environment, node.get_item(0)).get_value()
         print("OP: " + str(operator), type(operator))
         if operator in Builtin:
-            print("Operator is some sort of builtin: ", operator.name)
             if operator == Builtin.DEFINE:
-                print("hard-coded DEFINE goes here")
                 name_atom = eval_node(environment, node.get_item(1))
                 if name_atom.isident():
                     tk_item = name_atom.get_value()
                     item_name = tk_item #._val
-                    print("Making recursive call to eval_node with ", node.get_item(2), node.get_item(1), node.get_item(0))
                     val_atom = eval_node(environment, node.get_item(2)) # should return a NewAtom-INTEGER(17), not an EnvItem
-                    print("eval_node[306] op is a Builtin: val_atom: " + str(val_atom) + ' ', type(val_atom))
                     print("define(%s, %s)" % (item_name, val_atom.get_value()))
                     return define_item(environment, item_name, val_atom)
         else:

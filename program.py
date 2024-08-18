@@ -3,7 +3,6 @@ from enum import Enum
 from env import (
     EnvItem,
     EnvTable,
-    ItemType,
 )
 
 from eval import (

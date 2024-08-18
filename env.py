@@ -16,37 +16,6 @@ from tokenizer import(
     TokenItem,
 )
 
-class ItemType(Enum):
-    INTEGER = 1
-    FLOAT = 2
-    TEXT = 3
-    BOOL = 4
-    LIST = 5
-    FUNCTION = 6
-    NIL = 7
-
-def toItemType(node):
-    if node is None:
-        return ItemType.NIL
-    elif node.isatom():
-        atom = node.get_value()
-        if atom.isinteger():
-            return ItemType.INTEGER
-        elif atom.isfloat():
-            return ItemType.FLOAT
-        elif atom.istext():
-            return ItemType.TEXT
-        elif atom.isbool():
-            return ItemType.BOOL
-        elif atom.isfunction():
-            return ItemType.FUNCTION
-        else:
-            return ItemType.NIL
-    elif node.islist():
-        return ItemType.LIST
-    else:
-        return ItemType.NIL
-
 def toAtom(node):
     if node == None:
         return Atom(TokenItem(Token.UNKNOWN))
@@ -74,6 +43,12 @@ class EnvItem:
     @property
     def value(self):
         return self._node.get_value() # returns an Atom or a hierarchical list of Atoms
+
+    def isatom(self):
+        return self._node.isatom()
+
+    def islist(self):
+        return self._node.islist()
 
     def istext(self):
         if not self._node.isatom():
@@ -105,12 +80,6 @@ class EnvItem:
         atom = self._node.get_value()
         return atom.isfunction()
 
-    def isatom(self):
-        return self._node.isatom()
-
-    def islist(self):
-        return self._node.islist()
-
     def clone(self):
         new_item = EnvItem(self.name, self._node)
         return new_item
@@ -138,7 +107,6 @@ class EnvItem:
             return 'nil'
         return '%s: %s' % (self.name, self.value_repr)
 
-#nil = EnvItem('nil', Node(ItemType.NIL)
 nil = EnvItem('nil', make_atom_node(Token.UNKNOWN))
 
 
@@ -162,7 +130,7 @@ class EnvTable:
                 self.table[idx] = new_item
                 return
         self.table.append(new_item)
-        
+
     def get_item(self, item_name):
         if item_name == 'nil':
             return nil
@@ -224,17 +192,5 @@ def define_item(environment, nam, atom):
     new_node.add(atom)
     new_item = EnvItem(nam, new_node)
     environment.set_item(new_item)
-    # if atom.isinteger():
-    #     int_item = EnvItem(nam, ItemType.INTEGER, (atom.get_value(),))
-    #     environment.set_item(int_item)
-    # if atom.isfloat():
-    #     float_item = EnvItem(nam, ItemType.FLOAT, (atom.get_value(),))
-    #     environment.set_item(float_item)
-    # if atom.istext():
-    #     text_item = EnvItem(nam, ItemType.TEXT, (atom.get_value(),))
-    #     environment.set_item(text_item)
-    # if atom.isbool():
-    #     bool_item = EnvItem(nam, ItemType.BOOL, (atom.get_value(),))
-    #     environment.set_item(bool_item)
     return atom
 
