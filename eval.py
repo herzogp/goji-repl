@@ -48,9 +48,10 @@ def env_item_to_atom(env_item):
 # which are stored in class NewAtom
 def eval_atom(environment, atom):
     uses_atoms = environment.get_integer('engineVersion-id') >= 0
-    engine_id = environment.get_integer('engineVersion-id')
-    engine_name = environment.get_text('engineVersion-name')[0]
-    print(f"engineVersion: {engine_name}({engine_id})\n")
+    # should be a version builtin that returns this text
+    # engine_id = environment.get_integer('engineVersion-id')
+    # engine_name = environment.get_text('engineVersion-name')[0]
+    # print(f"engineVersion: {engine_name}({engine_id})\n")
     sub_item = atom.get_value()
     if sub_item.isident():
        env_name = sub_item.get_value()
@@ -60,7 +61,6 @@ def eval_atom(environment, atom):
        # TODO: Why return the ident here? 
        # Because it must be a define???? 
        if x == None:
-            print("eval_atom: lookup failed returning atom.get_value() => ", str(sub_item))
             return sub_item
 
        # x is an EnvItem with .name .typ and .value properties

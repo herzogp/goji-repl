@@ -124,19 +124,33 @@ class EnvTable:
     def set_item(self, item):
         if item.isNil():
             return
-        new_item = item.clone()
+        # caller is trusted to not modify
+        # the item - they relinquish write access
+        # otherwise, the item should be cloned
+        # new_item = item.clone()
+        new_item = item
         for idx, old_item in enumerate(self.table):
             if old_item.name == new_item.name:
                 self.table[idx] = new_item
                 return
         self.table.append(new_item)
 
+    def hasTopLevelValue(self, item_name):
+        if item_name == 'nil':
+            return True
+        for old_item in self.table:
+            if old_item.name == item_name:
+                return True
+        return False
+
     def get_item(self, item_name):
         if item_name == 'nil':
             return nil
         for old_item in self.table:
             if old_item.name == item_name:
-                return old_item.clone()
+                # trust the caller
+                return old_item
+                # return old_item.clone if the caller is untrusted
         if self.parent != None:
             return self.parent.get_item(item_name)
         else:
@@ -188,6 +202,10 @@ class EnvTable:
 # atom must support isinteger(), isfloat(), istext(), isbool() and get_value()
 # Both NewAtom and OldAtom support these methods
 def define_item(environment, nam, atom):
+    does_exist = environment.hasTopLevelValue(nam)
+    if does_exist:
+        print("%s is immutable - should not be modifying it" % nam)
+        return environment.get_item(nam)
     new_node = Node(NodeType.ATOM)
     new_node.add(atom)
     new_item = EnvItem(nam, new_node)
