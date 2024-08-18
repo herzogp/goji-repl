@@ -1,6 +1,21 @@
 import itertools
 from enum import Enum
 
+from node import(
+    Node,
+    NodeType,
+    make_atom_node,
+)
+
+from atom import(
+    Atom,
+)
+
+from tokenizer import(
+    Token,
+    TokenItem,
+)
+
 class ItemType(Enum):
     INTEGER = 1
     FLOAT = 2
@@ -10,114 +25,121 @@ class ItemType(Enum):
     FUNCTION = 6
     NIL = 7
 
-class EnvItem:
-    def __init__(self, name, typ, value=tuple()):
-        if typ == ItemType.NIL:
-            if name != "nil" or value != tuple():
-                raise Exception("Cannot create nil value")
-        self._name = name
-        self._typ = typ
-        if value == tuple():
-            print("value is equal to tuple()")
-            if typ == ItemType.TEXT:
-                value = ("",)
-            elif typ == ItemType.INTEGER:
-                value = (0,)
-            elif typ == ItemType.FLOAT:
-                value = (0.0,)
-            elif typ == ItemType.BOOL:
-                value = (False,)
-            elif typ == ItemType.LIST:
-                value = ()
-            # FUNCTION's should never have an empty value
-            # Force this to be an empty list instead
-            elif typ == ItemType.FUNCTION:
-                self._typ = ItemType.LIST
-                value = ()
-        self._value = value
-        print("created EnvItem '%s' with typ '%s' and value: " % (self._name, self._typ.name), self._value, " => type: ",  type(value))
+def toItemType(node):
+    if node is None:
+        return ItemType.NIL
+    elif node.isatom():
+        atom = node.get_value()
+        if atom.isinteger():
+            return ItemType.INTEGER
+        elif atom.isfloat():
+            return ItemType.FLOAT
+        elif atom.istext():
+            return ItemType.TEXT
+        elif atom.isbool():
+            return ItemType.BOOL
+        elif atom.isfunction():
+            return ItemType.FUNCTION
+        else:
+            return ItemType.NIL
+    elif node.islist():
+        return ItemType.LIST
+    else:
+        return ItemType.NIL
 
-    #ItemType.FUNCTION should include the code to be evaluated,
-    # and for special forms, might be 'builtin' code
-    # This might be represented as (FunctionType.NATIVE, native_code_id) or (FunctionType.USER, Params, Expr )
-    #
-    # Probably want to create an EnvItem from a name and an Atom
+def toAtom(node):
+    if node == None:
+        return Atom(TokenItem(Token.UNKNOWN))
+
+    if node.isatom():
+        return node.get_value()
+    return None
+
+def toList(node):
+    if node.islist():
+        return node.get_value()
+    return None
+
+# EnvItem can be a name + Node
+class EnvItem:
+    def __init__(self, name, node):
+        self._name = name
+        self._node = node
+
+
     @property
     def name(self):
         return self._name
 
-    # Could provide an equivalent get_type() method from Atom
-    @property
-    def typ(self):
-        return self._typ
-
-    # Equivalent get_value() method from Atom
     @property
     def value(self):
-        return self._value
+        return self._node.get_value() # returns an Atom or a hierarchical list of Atoms
 
-    # Equivalent method for Atom
     def istext(self):
-        return self._typ == ItemType.TEXT
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.istext()
 
-    # Equivalent method for Atom
     def isinteger(self):
-        return self._typ == ItemType.INTEGER
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.isinteger()
 
-    # Equivalent method for Atom
     def isfloat(self):
-        return self._typ == ItemType.FLOAT
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.isfloat()
 
-    # Equivalent method for Atom
     def isbool(self):
-        return self._typ == ItemType.BOOL
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.isbool()
 
-    # Not supported by Atom
     def isfunction(self):
-        return self._typ == ItemType.FUNCTION
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.isfunction()
 
-    # Not supported by Atom
+    def isatom(self):
+        return self._node.isatom()
+
     def islist(self):
-        return self._typ == ItemType.LIST
+        return self._node.islist()
 
     def clone(self):
-        new_item = EnvItem(self.name, self.typ, self.value)
+        new_item = EnvItem(self.name, self._node)
         return new_item
 
     # Equivalent method isnil() for Atom
     def isNil(self):
-        if self._typ == ItemType.NIL:
-            return True
-        return self._name == 'nil'
+        if not self._node.isatom():
+            return False
+        atom = self._node.get_value()
+        return atom.isnil()
 
     @property
     def value_repr(self):
-        if self.typ == ItemType.NIL:
-            return nil
-        if self.typ == ItemType.LIST:
-            return str(self._value)
-
-        this_val = self._value[0]
-        format_str = '%s'
-        if self._typ == ItemType.TEXT:
-            format_str = "'%s'"
-        elif self._typ == ItemType.INTEGER:
-            format_str = '%d'
-        elif self._typ == ItemType.FLOAT:
-            format_str = '%g'
-        elif self._typ == ItemType.BOOL:
-            format_str = '%s'
-        elif self._typ == ItemType.FUNCTION:
-            return "%s(%d)" % (this_val.name, this_val.value)
+        if self.isNil():
+            return 'nil'
+        elif self.islist():
+            return str(self.value)
+        elif self.isatom():
+            return str(self.value.get_value())
         else:
-            format_str = '?%s'
-        return format_str % this_val
+            return "??<unknown>??"
 
     def __str__(self):
-        if self.typ == ItemType.NIL:
+        if self.isNil():
             return 'nil'
         return '%s: %s' % (self.name, self.value_repr)
-nil = EnvItem('nil', ItemType.NIL)
+
+#nil = EnvItem('nil', Node(ItemType.NIL)
+nil = EnvItem('nil', make_atom_node(Token.UNKNOWN))
 
 
 class EnvTable:
@@ -147,8 +169,6 @@ class EnvTable:
         for old_item in self.table:
             if old_item.name == item_name:
                 return old_item.clone()
-            # else:
-            #     print('Looking for "%s" [0]- it is not equal to "%s"' % (item_name, old_item.name))
         if self.parent != None:
             return self.parent.get_item(item_name)
         else:
@@ -157,19 +177,19 @@ class EnvTable:
     def get_integer(self, item_name):
         env_item = self.get_item(item_name)
         if env_item.isinteger():
-            return env_item.value[0]
+            return env_item.value.get_value()
         return 0
 
     def get_text(self, item_name):
         env_item = self.get_item(item_name)
         if env_item.istext():
-            return env_item.value
+            return env_item.value.get_value()
         return "" 
 
     def get_bool(self, item_name):
         env_item = self.get_item(item_name)
         if env_item.isbool():
-            return env_item.value[0]
+            return env_item.value.get_value()
         return False
 
     def show(self):
@@ -200,17 +220,21 @@ class EnvTable:
 # atom must support isinteger(), isfloat(), istext(), isbool() and get_value()
 # Both NewAtom and OldAtom support these methods
 def define_item(environment, nam, atom):
-    if atom.isinteger():
-        int_item = EnvItem(nam, ItemType.INTEGER, (atom.get_value(),))
-        environment.set_item(int_item)
-    if atom.isfloat():
-        float_item = EnvItem(nam, ItemType.FLOAT, (atom.get_value(),))
-        environment.set_item(float_item)
-    if atom.istext():
-        text_item = EnvItem(nam, ItemType.TEXT, (atom.get_value(),))
-        environment.set_item(text_item)
-    if atom.isbool():
-        bool_item = EnvItem(nam, ItemType.BOOL, (atom.get_value(),))
-        environment.set_item(bool_item)
+    new_node = Node(NodeType.ATOM)
+    new_node.add(atom)
+    new_item = EnvItem(nam, new_node)
+    environment.set_item(new_item)
+    # if atom.isinteger():
+    #     int_item = EnvItem(nam, ItemType.INTEGER, (atom.get_value(),))
+    #     environment.set_item(int_item)
+    # if atom.isfloat():
+    #     float_item = EnvItem(nam, ItemType.FLOAT, (atom.get_value(),))
+    #     environment.set_item(float_item)
+    # if atom.istext():
+    #     text_item = EnvItem(nam, ItemType.TEXT, (atom.get_value(),))
+    #     environment.set_item(text_item)
+    # if atom.isbool():
+    #     bool_item = EnvItem(nam, ItemType.BOOL, (atom.get_value(),))
+    #     environment.set_item(bool_item)
     return atom
 

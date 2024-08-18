@@ -15,46 +15,65 @@ from parser import (
 )
 
 from atom import (
+    Atom,
     Builtin,
 )
 
+from node import (
+    make_atom_node,
+    make_node_from_atom,
+)
+
+from tokenizer import (
+    Token,
+    TokenItem,
+)
+
 class EngineVersion(Enum):
-    V0_1_0 = 3,
+    V0_1_0 = 3
 
 def run_program(program_file):
     # Setup the root environment
     program_env = EnvTable()
 
     # Add the engine version
-    builtin = EnvItem('engineVersion-id', ItemType.INTEGER, EngineVersion.V0_1_0.value)
-    program_env.set_item(builtin)
-    builtin = EnvItem('engineVersion-name', ItemType.TEXT, (EngineVersion.V0_1_0.name,))
-    program_env.set_item(builtin)
-
-    builtin = EnvItem('define', ItemType.FUNCTION, (Builtin.DEFINE,))
+    name_val = EngineVersion.V0_1_0.name
+    builtin = EnvItem('engineVersion-name', make_atom_node(Token.QTEXT, EngineVersion.V0_1_0.name))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('+', ItemType.FUNCTION, (Builtin.OP_PLUS,))
+    this_val = EngineVersion.V0_1_0.value
+    builtin = EnvItem('engineVersion-id', make_atom_node(Token.NUMERIC, str(EngineVersion.V0_1_0.value)))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('*', ItemType.FUNCTION, (Builtin.OP_MULT,))
+    builtin = EnvItem('seven', make_atom_node(Token.NUMERIC, str(7)))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('seven', ItemType.INTEGER, (7,))
+    temp_atom = Atom(TokenItem(Token.QTEXT, '#t')).asbool()
+    builtin = EnvItem('#t', make_node_from_atom(temp_atom))
+    program_env.set_item(builtin)
+    
+    temp_atom = Atom(TokenItem(Token.QTEXT, '#f')).asbool()
+    builtin = EnvItem('#f', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('#t', ItemType.BOOL, (True,))
+    temp_atom = Atom(TokenItem(Token.QTEXT, '#define')).asbuiltin()
+    builtin = EnvItem('define', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('#f', ItemType.BOOL, (False,))
+    temp_atom = Atom(TokenItem(Token.QTEXT, '#add')).asbuiltin()
+    builtin = EnvItem('+', make_node_from_atom(temp_atom))
+    program_env.set_item(builtin)
+
+    temp_atom = Atom(TokenItem(Token.QTEXT, '#mult')).asbuiltin()
+    builtin = EnvItem('*', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
     # parse and show/eval AST
     all_nodes = parse_program(program_file)
     for idx, n in enumerate(all_nodes):
         print("\n[%2.2i] %s" % (idx, str(n)))
-        tk_item = eval_node(program_env, n)
-        print("=> %s" % str(tk_item))
+        node_val = eval_node(program_env, n)
+        print("=> %s" % str(node_val))
  
     # show ending environment
     print("\nGoji Ending Environment:")

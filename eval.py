@@ -67,20 +67,27 @@ def eval_atom(environment, atom):
             return sub_item
 
        # x is an EnvItem with .name .typ and .value properties
+       print(type(x))
+       print("X is: ", x, "  its type is: ", type(x))
        if uses_atoms:
            print("eval_atom: uses_atoms x: ", type(x), str(x))
            xval = x.value
-           print("eval_atom(env, '%s') returns %s with type: " % (env_name, xval),type(xval), x.typ)
-           if x.typ == ItemType.FUNCTION:
-                return xval[0]
-           return env_item_to_atom(x)
+           return xval
+           # [PH] print("eval_atom(env, '%s') returns %s with type: " % (env_name, xval),type(xval), "not using x.typ")
+           # [PH] if x.isfunction():
+           # [PH] #if x.typ == ItemType.FUNCTION:
+           # [PH]      return xval[0]
+           # [PH] return env_item_to_atom(x)
     return sub_item
 
 def eval_node(environment, node):
     if node.isatom():
         return eval_atom(environment, node)
     else:
-        operator = eval_node(environment, node.get_item(0))
+        print("this node(not an atom): ", node)
+        firstNodeItem = node.get_item(0)
+        print("firstNodeItem: ", firstNodeItem)
+        operator = eval_node(environment, node.get_item(0)).get_value()
         print("OP: " + str(operator), type(operator))
         if operator in Builtin:
             print("Operator is some sort of builtin: ", operator.name)

@@ -4,97 +4,22 @@ from tokenizer import (
 
 from atom import (
     AtomType,
-    NodeType,
-    NodeItem,
+    Atom,
 )
 
-class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
-    def __init__(self, token_item):
-        token_val = token_item.value()
-        if token_item.is_text():
-            self._typ = AtomType.IDENT
-            self._val = token_val
-        elif token_item.is_literal_text():
-            self._typ = AtomType.TEXT
-            self._val = token_val
-        elif token_item.is_numeric():
-            self._typ = AtomType.INTEGER # (or FLOAT)
-            if token_val.find('0x') == 0:
-                self._type = AtomType.INTEGER
-                self._val = hex2int(token_val)
-            elif (token_val.find('.') >= 0) or (token_val.find('e') > 0):
-                self._typ = AtomType.FLOAT
-                self._val = float(token_val)
-            else:
-                self._typ = AtomType.INTEGER
-                self._val = int(token_val)
-        elif token_item.is_symbol():
-            self._typ = AtomType.SYMBOL 
-            self._val = token_val
-        else:
-            self._typ = AtomType.NIL
-            self._val = ''
-
-    def did_apply_symbol(self, s):
-        if s != '#':
-            return False
-        if self.isident():
-            new_val = '#' + self._val
-            self._val = new_val
-            return True
-
-    def asbool(self):
-        if self._typ == AtomType.TEXT:
-            if self._val == '#t':
-                self._val = True
-                self._type = AtomType.BOOL
-            if self._val == '#f':
-                self._val = False
-                self._type = AtomType.BOOL
-        return self
-
-    def isident(self):
-        return self._typ == AtomType.IDENT
-
-    # Equivalent method for EnvItem
-    def isbool(self):
-        return self._typ == AtomType.BOOL
-
-    # Equivalent method for EnvItem
-    def isinteger(self):
-        return self._typ == AtomType.INTEGER
-
-    # Equivalent method for EnvItem
-    def isfloat(self):
-        return self._typ == AtomType.FLOAT
-
-    # Equivalent method for EnvItem
-    def istext(self):
-        return self._typ == AtomType.TEXT
-
-    def issymbol(self):
-        return self._typ == AtomType.SYMBOL
-
-    def isnil(self):
-        return self._typ == AtomType.NIL
-
-    def isbool(self):
-        return False
-
-    def get_value(self):
-        return self._val
-
-    def __str__(self):
-        return "Atom-%s(%s)" % (self._typ.name, self._val)
+from node import (
+    NodeType,
+    Node,
+)
 
 
-# tk is a TokenItem
+# parse_atom: TokenItem -> Node
 def parse_atom(tk_item):
     tk_type = tk_item.t
     tk_str = tk_item.value()
     if tk_item.has_value():
         atom = Atom(tk_item)
-        node = NodeItem(NodeType.ATOM)
+        node = Node(NodeType.ATOM)
         node.add(atom) # should add a TEXT/INT/FLOAT/IDENT item here
         return node
     else:
@@ -105,28 +30,23 @@ def parse_atom(tk_item):
 def adjusted_node(maybe_node, more_tokens):
     the_atom = maybe_node.get_value()
     the_atom_val = the_atom.get_value()
-    print('the_atom: ' + str(the_atom))
     if the_atom.issymbol() and (the_atom_val == '#') and (len(more_tokens) > 1):
-        print('seeing a #')
         the_next_tk = more_tokens[1]
         the_next_node = parse_atom(the_next_tk)
-        print('next_node: ' + str(the_next_node))
         did_apply = False
         if the_next_node != None:
             if the_next_node.did_apply_symbol(the_atom_val):
-                print('Did apply to something...\n')
                 return the_next_node, 1
-    print('Did not apply it\n')
     return None
 
+# parse_list: Stream<TokenItem> -> Node
 def parse_list(tokens):
     nx = len(tokens)
     if nx == 0:
         return None
-    node = NodeItem(NodeType.LIST) # should be more like NodeType.EXPR
+    node = Node(NodeType.LIST) # should be more like NodeType.EXPR
     idx = 0
     tk = tokens[idx]
-    # tk_type = tk.t
     while not tk.is_list_end():
         # One of: [IDENT, INTEGER, FLOAT, TEXT, BOOL]
         if tk.has_value(): 
@@ -140,7 +60,6 @@ def parse_list(tokens):
                 node.add(new_node)
 
         # One of: [LPAREN]
-        #elif tk.islist():
         elif tk.is_list_begin():
             maybe_list = parse_list(tokens[idx:])
             if maybe_list == None:
@@ -160,7 +79,7 @@ def parse_list(tokens):
 
     return node, tokens[idx+1:] # should be number of tokens consummed, not [1:]
 
-# tokens is an array of TokenItem
+# parse_node: Stream<TokenItem> -> Node
 def parse_node(tokens):
     if len(tokens) == 0:
         return None
@@ -169,7 +88,6 @@ def parse_node(tokens):
     tk = tokens[0]
     maybe_node = parse_atom(tk)
     if maybe_node != None:
-        # return maybe_node, tokens[1:]
         adjusted_result = adjusted_node(maybe_node, tokens)
         new_idx = 1
         if adjusted_result != None:
@@ -178,7 +96,6 @@ def parse_node(tokens):
         return maybe_node, tokens[new_idx:]
 
     # Must be a LIST - better check anyway
-    # elif tk.islist():
     elif tk.is_list_begin():
         # either returns None
         # or (node, [more_tokens])
@@ -187,6 +104,7 @@ def parse_node(tokens):
         print('Unexpected: ', str(tk))
         return None
 
+# parse_program: FilePath -> Node[]
 def parse_program(file_path):
     tokens = tokenize_program(file_path)
     tk_count = len(tokens)

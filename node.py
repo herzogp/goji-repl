@@ -1,5 +1,14 @@
 from enum import Enum
 
+from tokenizer import(
+    Token,
+    TokenItem,
+)
+
+from atom import(
+    Atom
+)
+
 class NodeType(Enum):
     ATOM = 1
     LIST = 2
@@ -18,7 +27,8 @@ class Node:
 
     def get_value(self):
         if not self.isatom():
-            return None
+            all_exprs = self.exprs
+            return [n.get_value() for n in all_exprs]
         return self.exprs[0]
 
     def get_item(self, idx):
@@ -30,10 +40,12 @@ class Node:
     def isatom(self):
         return self._typ == NodeType.ATOM
 
+    # returns an array of nodes
     def get_list(self):
         if not self.islist():
             return None
-        return self.exprs[0]
+        # [Seems wrong] return self.exprs[0]
+        return self.exprs
 
     def islist(self):
         return self._typ == NodeType.LIST
@@ -52,3 +64,14 @@ class Node:
     def __str__(self):
         args = ', '.join([str(item) for item in self.exprs])
         return '#%s(%s)' % (self._typ.name, args)
+
+def make_atom_node(tk_type: Token, tk_val=''):
+    node = Node(NodeType.ATOM)
+    tk_item = TokenItem(tk_type, tk_val)
+    node.add(Atom(tk_item))
+    return node
+
+def make_node_from_atom(atom):
+    node = Node(NodeType.ATOM)
+    node.add(atom)
+    return node
