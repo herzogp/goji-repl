@@ -11,6 +11,7 @@ from atom import (
 
 from intrinsics import (
     define_item,
+    num_args_for_op,
 )
 
 from parser import (
@@ -77,7 +78,8 @@ def eval_node(environment, node):
         return eval_atom(environment, node)
     else:
         operator = eval_node(environment, node.get_item(0)).get_value()
-        print("OP: " + str(operator), type(operator))
+        print("Operator: ", operator)
+        print("OP: '%s' '%s' %s" % (str(operator), node.get_item(0)._typ, type(operator)))
         if operator in Builtin:
             nargs = len(node) - 1
             op_name, args_expected = num_args_for_op(operator)
@@ -90,17 +92,14 @@ def eval_node(environment, node):
             if operator == Builtin.DEFINE:
                 all_args = [node.get_item(1+idx) for idx in range(args_expected)]
                 return apply_op(environment, operator, all_args)
+            elif operator == Builtin.OP_ADD:
+                all_args = [node.get_item(1+idx) for idx in range(args_expected)]
+                return apply_op(environment, operator, all_args)
+
         else:
             print("Expected an operator, found '%s'" % str(operator))
     
         return 0
-
-def eval_ident(environment, ident):
-    # lookup the ident._val in the environment
-    # for the 'define' builtin', this lookup should return
-    # an indication that this is a builtin, and the specific
-    # builtin identifier
-    pass
 
 def apply_op(environment, op, all_args):
     if op == Builtin.DEFINE:
@@ -119,12 +118,18 @@ def apply_op(environment, op, all_args):
         val_atom = eval_node(environment, all_args[1]) # should return a NewAtom-INTEGER(17), not an EnvItem
         print("define(%s, %s)" % (item_name, val_atom.get_value()))
         return define_item(environment, item_name, val_atom)
-
-def num_args_for_op(op):
-    if op == Builtin.DEFINE:
-        return 'define', 2
     elif op == Builtin.OP_ADD:
-        return '+', 2
-    elif op == Builtin.OP_MULT:
-        return '*', 2
-    return str(op), 0
+        left_operand = eval_node(environment, all_args[0])
+        right_operand = eval_node(environment, all_args[1])
+        left_val = left_operand.get_value()
+        right_val = right_operand.get_value()
+        print("ADD(%d, %d)" % (left_val, right_val))
+        print("==> %d" % (left_val + right_val))
+
+def eval_ident(environment, ident):
+    # lookup the ident._val in the environment
+    # for the 'define' builtin', this lookup should return
+    # an indication that this is a builtin, and the specific
+    # builtin identifier
+    pass
+

@@ -1,5 +1,7 @@
 from tokenizer import (
     tokenize_program,
+    Token, 
+    TokenItem,
 )
 
 from atom import (
@@ -30,13 +32,19 @@ def parse_atom(tk_item):
 def adjusted_node(maybe_node, more_tokens):
     the_atom = maybe_node.get_value()
     the_atom_val = the_atom.get_value()
-    if the_atom.issymbol() and (the_atom_val == '#') and (len(more_tokens) > 1):
-        the_next_tk = more_tokens[1]
-        the_next_node = parse_atom(the_next_tk)
-        did_apply = False
-        if the_next_node != None:
-            if the_next_node.did_apply_symbol(the_atom_val):
-                return the_next_node, 1
+    if the_atom.issymbol():
+        if (the_atom_val == '#') and (len(more_tokens) > 1):
+            the_next_tk = more_tokens[1]
+            the_next_node = parse_atom(the_next_tk)
+            did_apply = False
+            if the_next_node != None:
+                if the_next_node.did_apply_symbol(the_atom_val):
+                    return the_next_node, 1
+        elif the_atom_val == '+':
+            new_atom = Atom(TokenItem(Token.QTEXT, '#add')).asbuiltin()
+            new_node = Node(NodeType.ATOM)
+            new_node.add(new_atom)
+            return new_node, 0
     return None
 
 # parse_list: Stream<TokenItem> -> Node

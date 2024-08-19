@@ -65,10 +65,12 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
 
     def asbuiltin(self):
         if self._typ == AtomType.TEXT:
+            print("self._typ: '%s'" % self._typ.name)
+            print("self._val: '%s'" % self._val)
             if self._val == '#define':
                 self._val = Builtin.DEFINE
                 self._typ = AtomType.FUNCTION
-            elif self._val == '#add':
+            elif (self._val == '#add') or (self._val == '+'):
                 self._val = Builtin.OP_ADD
                 self._typ = AtomType.FUNCTION
             elif self._val == '#mult':

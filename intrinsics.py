@@ -1,5 +1,9 @@
 from enum import Enum
 
+from atom import (
+    Builtin,
+)
+
 from node import(
     Node,
     NodeType,
@@ -8,6 +12,15 @@ from node import(
 from env import(
     EnvItem,
 )
+
+def num_args_for_op(op):
+    if op == Builtin.DEFINE:
+        return 'define', 2
+    elif op == Builtin.OP_ADD:
+        return '+', 2
+    elif op == Builtin.OP_MULT:
+        return '*', 2
+    return str(op), 0
 
 # nam is a primitive/native TEXT
 # atom must support isinteger(), isfloat(), istext(), isbool() and get_value()
