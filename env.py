@@ -131,8 +131,10 @@ class EnvTable:
         new_item = item
         for idx, old_item in enumerate(self.table):
             if old_item.name == new_item.name:
+                print("Replacing %s with %s" % (new_item.name, new_item))
                 self.table[idx] = new_item
                 return
+        print("Creating item: %s" % new_item)
         self.table.append(new_item)
 
     def hasTopLevelValue(self, item_name):

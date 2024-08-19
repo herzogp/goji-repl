@@ -77,13 +77,25 @@ def eval_node(environment, node):
         print("OP: " + str(operator), type(operator))
         if operator in Builtin:
             if operator == Builtin.DEFINE:
-                name_atom = eval_node(environment, node.get_item(1))
-                if name_atom.isident():
-                    tk_item = name_atom.get_value()
-                    item_name = tk_item #._val
-                    val_atom = eval_node(environment, node.get_item(2)) # should return a NewAtom-INTEGER(17), not an EnvItem
-                    print("define(%s, %s)" % (item_name, val_atom.get_value()))
-                    return define_item(environment, item_name, val_atom)
+                nargs = len(node) - 1
+                if nargs < 2:
+                    suffix = "s"
+                    if nargs == 1:
+                        suffix = ""
+                    print("Unable to define - needs more than %d argument%s" % (nargs, suffix))
+                    return 0
+                name_node = node.get_item(1)
+                if not name_node.isatom():
+                    print("Unable to assign a value to ", name_atom)    
+                    return 0
+                name_atom = name_node.get_value()
+                if not name_atom.isident():
+                    print("Unable to assign a value to ", name_atom)    
+                    return 0
+                item_name = name_atom.get_value()
+                val_atom = eval_node(environment, node.get_item(2)) # should return a NewAtom-INTEGER(17), not an EnvItem
+                print("define(%s, %s)" % (item_name, val_atom.get_value()))
+                return define_item(environment, item_name, val_atom)
         else:
             print("Expected an operator, found '%s'" % str(operator))
     
