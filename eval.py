@@ -3,11 +3,14 @@ from enum import Enum
 
 from env import (
     EnvItem,
-    define_item,
 )
 
 from atom import (
     Builtin,
+)
+
+from intrinsics import (
+    define_item,
 )
 
 from parser import (

@@ -1,6 +1,3 @@
-import itertools
-from enum import Enum
-
 from node import(
     Node,
     NodeType,
@@ -16,20 +13,7 @@ from tokenizer import(
     TokenItem,
 )
 
-def toAtom(node):
-    if node == None:
-        return Atom(TokenItem(Token.UNKNOWN))
-
-    if node.isatom():
-        return node.get_value()
-    return None
-
-def toList(node):
-    if node.islist():
-        return node.get_value()
-    return None
-
-# EnvItem can be a name + Node
+# EnvItem is a name + Node
 class EnvItem:
     def __init__(self, name, node):
         self._name = name
@@ -179,38 +163,3 @@ class EnvTable:
     def show(self):
         for item in self.table:
             print(str(item))
-
-# ----------------------------------------------------------------------
-# NOTE:
-# parse into a list of EXPR's
-# then, evaluate these EXPRS's from top to bottom
-# EXPR is () which evaluates to '()'
-# or TEXT which evaluates to 'TEXT'
-# or NUMBER which evaluates to NUMBER
-# or IDENT which evaluates to LOOKUP(ENV, IDENT) where ENV includes builtins
-# or (IDENT,'def')
-# or (EXPR arg1 arg2 ...) which evaluates to:
-#   let fn = LOOKUP(ENV, EXPR)
-#   let new_env = COPY(ENV)
-#   for param,idx in fn.PARAM_NAMES
-#       let arg = arglist[idx]
-#       let argval = EVAL(ENV, arg)
-#       SET(new_env, param, argval)
-#   EVAL(new_env, fn.BODY)
-# ----------------------------------------------------------------------
-
-
-# nam is a primitive/native TEXT
-# atom must support isinteger(), isfloat(), istext(), isbool() and get_value()
-# Both NewAtom and OldAtom support these methods
-def define_item(environment, nam, atom):
-    does_exist = environment.hasTopLevelValue(nam)
-    if does_exist:
-        print("%s is immutable - should not be modifying it" % nam)
-        return environment.get_item(nam)
-    new_node = Node(NodeType.ATOM)
-    new_node.add(atom)
-    new_item = EnvItem(nam, new_node)
-    environment.set_item(new_item)
-    return atom
-
