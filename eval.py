@@ -79,26 +79,17 @@ def eval_node(environment, node):
         operator = eval_node(environment, node.get_item(0)).get_value()
         print("OP: " + str(operator), type(operator))
         if operator in Builtin:
+            nargs = len(node) - 1
+            op_name, args_expected = num_args_for_op(operator)
+            if nargs < args_expected:
+                suffix = "s"
+                if nargs == 1:
+                    suffix = ""
+                print("Unable to evaluate '%s' - needs more than %d argument%s" % (op_name, nargs, suffix))
+                return 0
             if operator == Builtin.DEFINE:
-                nargs = len(node) - 1
-                if nargs < 2:
-                    suffix = "s"
-                    if nargs == 1:
-                        suffix = ""
-                    print("Unable to define - needs more than %d argument%s" % (nargs, suffix))
-                    return 0
-                name_node = node.get_item(1)
-                if not name_node.isatom():
-                    print("Unable to assign a value to ", name_atom)    
-                    return 0
-                name_atom = name_node.get_value()
-                if not name_atom.isident():
-                    print("Unable to assign a value to ", name_atom)    
-                    return 0
-                item_name = name_atom.get_value()
-                val_atom = eval_node(environment, node.get_item(2)) # should return a NewAtom-INTEGER(17), not an EnvItem
-                print("define(%s, %s)" % (item_name, val_atom.get_value()))
-                return define_item(environment, item_name, val_atom)
+                all_args = [node.get_item(1+idx) for idx in range(args_expected)]
+                return apply_op(environment, operator, all_args)
         else:
             print("Expected an operator, found '%s'" % str(operator))
     
@@ -110,3 +101,30 @@ def eval_ident(environment, ident):
     # an indication that this is a builtin, and the specific
     # builtin identifier
     pass
+
+def apply_op(environment, op, all_args):
+    if op == Builtin.DEFINE:
+        # The name of the item to define
+        name_node = all_args[0]
+        if not name_node.isatom():
+            print("Unable to assign a value to ", name_atom)    
+            return 0
+        name_atom = name_node.get_value()
+        if not name_atom.isident():
+            print("Unable to assign a value to ", name_atom)    
+            return 0
+        item_name = name_atom.get_value()
+
+        # The value to be defined
+        val_atom = eval_node(environment, all_args[1]) # should return a NewAtom-INTEGER(17), not an EnvItem
+        print("define(%s, %s)" % (item_name, val_atom.get_value()))
+        return define_item(environment, item_name, val_atom)
+
+def num_args_for_op(op):
+    if op == Builtin.DEFINE:
+        return 'define', 2
+    elif op == Builtin.OP_ADD:
+        return '+', 2
+    elif op == Builtin.OP_MULT:
+        return '*', 2
+    return str(op), 0
