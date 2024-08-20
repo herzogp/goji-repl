@@ -89,10 +89,7 @@ def eval_node(environment, node):
                     suffix = ""
                 print("Unable to evaluate '%s' - needs more than %d argument%s" % (op_name, nargs, suffix))
                 return 0
-            if operator == Builtin.DEFINE:
-                all_args = [node.get_item(1+idx) for idx in range(args_expected)]
-                return apply_op(environment, operator, all_args)
-            elif operator == Builtin.OP_ADD:
+            if operator in Builtin:
                 all_args = [node.get_item(1+idx) for idx in range(args_expected)]
                 return apply_op(environment, operator, all_args)
 
@@ -123,13 +120,18 @@ def apply_op(environment, op, all_args):
         right_operand = eval_node(environment, all_args[1])
         left_val = left_operand.get_value()
         right_val = right_operand.get_value()
+        result = left_val + right_val
         print("ADD(%d, %d)" % (left_val, right_val))
-        print("==> %d" % (left_val + right_val))
-
-def eval_ident(environment, ident):
-    # lookup the ident._val in the environment
-    # for the 'define' builtin', this lookup should return
-    # an indication that this is a builtin, and the specific
-    # builtin identifier
-    pass
-
+        # print("==> %d" % result)
+        new_atom = Atom(TokenItem(Token.NUMERIC,str(result)))
+        return new_atom
+    elif op == Builtin.OP_MULT:
+        left_operand = eval_node(environment, all_args[0])
+        right_operand = eval_node(environment, all_args[1])
+        left_val = left_operand.get_value()
+        right_val = right_operand.get_value()
+        result = left_val * right_val
+        print("MULT(%d, %d)" % (left_val, right_val))
+        # print("==> %d" % result)
+        new_atom = Atom(TokenItem(Token.NUMERIC, str(result)))
+        return new_atom

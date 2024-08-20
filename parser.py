@@ -45,6 +45,11 @@ def adjusted_node(maybe_node, more_tokens):
             new_node = Node(NodeType.ATOM)
             new_node.add(new_atom)
             return new_node, 0
+        elif the_atom_val == '*':
+            new_atom = Atom(TokenItem(Token.QTEXT, '#mult')).asbuiltin()
+            new_node = Node(NodeType.ATOM)
+            new_node.add(new_atom)
+            return new_node, 0
     return None
 
 # parse_list: Stream<TokenItem> -> Node

@@ -73,7 +73,7 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
             elif (self._val == '#add') or (self._val == '+'):
                 self._val = Builtin.OP_ADD
                 self._typ = AtomType.FUNCTION
-            elif self._val == '#mult':
+            elif (self._val == '#mult') or (self._val == '*'):
                 self._val = Builtin.OP_MULT
                 self._typ = AtomType.FUNCTION
             else:
