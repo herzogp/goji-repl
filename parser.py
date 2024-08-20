@@ -52,6 +52,11 @@ def adjusted_node(maybe_node, more_tokens):
             return new_node, 0
     return None
 
+def show_tokens(tokens, n):
+    lx = len(tokens)
+    while idx < lx:
+        print("")
+
 # parse_list: Stream<TokenItem> -> Node
 def parse_list(tokens):
     nx = len(tokens)
@@ -74,13 +79,14 @@ def parse_list(tokens):
 
         # One of: [LPAREN]
         elif tk.is_list_begin():
+            idx = idx + 1
             maybe_list = parse_list(tokens[idx:])
             if maybe_list == None:
                 print("Unexpected end of sub-list")
                 return None
             sub_list, rest_tokens = maybe_list
             node.add(sub_list)
-            idx = idx + len(sub_list) + 1
+            idx = idx + len(sub_list) # + 1
         #...
 
         idx = idx + 1
