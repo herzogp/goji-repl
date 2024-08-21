@@ -17,9 +17,7 @@ from node import (
 
 # parse_atom: TokenItem -> Node
 def parse_atom(tk_item):
-    tk_type = tk_item.t
-    tk_str = tk_item.value()
-    if tk_item.has_value():
+    if tk_item.has_value() or tk_item.is_line_info():
         atom = Atom(tk_item)
         node = Node(NodeType.ATOM)
         node.add(atom) # should add a TEXT/INT/FLOAT/IDENT item here
@@ -105,6 +103,8 @@ def parse_node(tokens):
 
     # See if this is an ATOM
     tk = tokens[0]
+    if tk is None:
+        return None
     maybe_node = parse_atom(tk)
     if maybe_node != None:
         adjusted_result = adjusted_node(maybe_node, tokens)
@@ -119,8 +119,13 @@ def parse_node(tokens):
         # either returns None
         # or (node, [more_tokens])
         return parse_list(tokens[1:])
+    elif tk.is_line_info():
+        print("we have line_info: ", tk.value)
+        return parse_node(tokens[1:])
     else:
-        print('Unexpected?: ', str(tk))
+        if not tk is None:
+            print('Unexpected?(a): ', tk)
+            print('Unexpected?: ', str(tk))
         return None
 
 # parse_program: FilePath -> Node[]

@@ -50,13 +50,13 @@ def env_item_to_atom(env_item):
 #
 # Returns Native values: int, float, str, bool 
 # which are stored in class NewAtom
-def eval_atom(environment, atom):
+def eval_atom(environment, node):
     uses_atoms = environment.get_integer('engineVersion-id') >= 0
     # should be a version builtin that returns this text
     # engine_id = environment.get_integer('engineVersion-id')
     # engine_name = environment.get_text('engineVersion-name')[0]
     # print(f"engineVersion: {engine_name}({engine_id})\n")
-    sub_item = atom.get_value()
+    sub_item = node.get_value()
     if sub_item.isident():
        env_name = sub_item.get_value()
 

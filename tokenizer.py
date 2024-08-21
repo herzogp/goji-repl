@@ -24,6 +24,10 @@ class Token(Enum):
     # Must not be the lead character for a TEXT, QTEXT, NUMBER
     SYMBOL = 6 
 
+    # Source 
+    LINE_BEGIN = 7 # '<line number>'
+    LINE_END = 8 # ''
+
 # ------------------------------------------------------------
 # TokenItem {
 #   t Token
@@ -49,6 +53,10 @@ class TokenItem:
             or self.t == Token.SYMBOL \
             or self.t == Token.NUMERIC
 
+    def is_line_info(self):
+        return self.t == Token.LINE_BEGIN \
+            or self.t == Token.LINE_END
+
     def is_numeric(self):
         return self.t == Token.NUMERIC
     
@@ -66,6 +74,12 @@ class TokenItem:
 
     def is_list_end(self):
         return self.t == Token.LIST_END
+
+    def is_line_begin(self):
+        return self.t == Token.LINE_BEGIN
+
+    def is_line_end(self):
+        return self.t == Token.LINE_END
 
     def value(self):
         return self.v
@@ -136,7 +150,8 @@ class Tokenizer:
         return self.tokens
 
     def add_token(self, tk, s=''):
-        self.tokens.append(TokenItem(tk, s))
+        new_tk = TokenItem(tk, s)
+        self.tokens.append(tk)
         self.reset()
 
     def emit_token(self):
@@ -258,8 +273,10 @@ class Tokenizer:
 # End class Tokekenizer
 # ----------------------------------------------------------------------
 
-def tokenize(char_iter):    
-    tk = Tokenizer()
+def tokenize(tk, lno, char_iter):    
+
+
+    tk.add_token(Token.LINE_BEGIN, str(lno))
 
     # Iterate over the characters
     for char in char_iter:
@@ -272,18 +289,24 @@ def tokenize(char_iter):
     if tk.istoken():
         tk.emit_token()
 
-    return tk.get_tokens()
+    tk.add_token(Token.LINE_END)
+    #return tk.get_tokens()
 
 def tokenize_program(file_path):
     should_join = False
     all_lines = lines_to_process(file_path, should_join)
     lno = 0
+    tk = Tokenizer()
     for line in all_lines:
         lno = lno + 1
         print("[%4d] %s" % (lno, line))
-    print("Read %d lines" % len(all_lines))
-    if len(all_lines) == 0:
-        print('Unable to read any lines from "%s"' % file_path)
-    joined_lines = ' '.join(all_lines)
-    char_iter = itertools.islice(joined_lines, 0, None)
-    return tokenize(char_iter)
+        char_iter = itertools.islice(line, 0, None)
+        more_tokens = tokenize(tk, lno, char_iter)
+
+    lx = len(all_lines)
+    suffix = 's'
+    if lx == 1:
+        suffix = ''
+    print('Processed %d line%s from "%s"' % (lx, suffix, file_path))
+
+    return tk.get_tokens()

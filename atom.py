@@ -15,6 +15,8 @@ class AtomType(Enum):
     NIL = 7
     # LIST = 8
     FUNCTION = 9
+    LINE_INFO = 10
+    LINE_END = 11
 
 class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
     def __init__(self, token_item):
@@ -39,6 +41,12 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
         elif token_item.is_symbol():
             self._typ = AtomType.SYMBOL 
             self._val = token_val
+        elif token_item.is_line_begin():
+            self._typ = AtomType.LINE_INFO
+            self._val = int(token_item.value)
+        elif token_item.is_line_end():
+            self._typ = AtomType.LINE_END
+            self._val = ''
         else:
             self._typ = AtomType.NIL
             self._val = ''
