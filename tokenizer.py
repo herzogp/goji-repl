@@ -275,8 +275,15 @@ def tokenize(char_iter):
     return tk.get_tokens()
 
 def tokenize_program(file_path):
-    joined_lines = lines_to_process(file_path)
-    if len(joined_lines) == 0:
+    should_join = False
+    all_lines = lines_to_process(file_path, should_join)
+    lno = 0
+    for line in all_lines:
+        lno = lno + 1
+        print("[%4d] %s" % (lno, line))
+    print("Read %d lines" % len(all_lines))
+    if len(all_lines) == 0:
         print('Unable to read any lines from "%s"' % file_path)
+    joined_lines = ' '.join(all_lines)
     char_iter = itertools.islice(joined_lines, 0, None)
     return tokenize(char_iter)

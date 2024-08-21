@@ -2,7 +2,7 @@ import os
 # import itertools
 # from enum import Enum
 
-def lines_to_process(filepath):
+def lines_to_process(filepath, should_join = True):
     all_lines = []
     if not os.access(filepath, os.R_OK):
         return all_lines
@@ -11,9 +11,10 @@ def lines_to_process(filepath):
         line = x.rstrip().lstrip()
         if not line.startswith(";"):
             all_lines.append(line)
-    joined_lines = ' '.join(all_lines)
     fo.close()
-    return joined_lines
+    if should_join:
+        return ' '.join(all_lines)
+    return all_lines
 
 
 def show_tokens(heading, tks):
