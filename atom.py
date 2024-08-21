@@ -20,7 +20,7 @@ class AtomType(Enum):
 
 class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
     def __init__(self, token_item):
-        token_val = token_item.value()
+        token_val = token_item.value
         if token_item.is_text():
             self._typ = AtomType.IDENT
             self._val = token_val

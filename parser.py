@@ -17,6 +17,7 @@ from node import (
 
 # parse_atom: TokenItem -> Node
 def parse_atom(tk_item):
+    print("parse_atom: ", tk_item, "  type: ", type(tk_item))
     if tk_item.has_value() or tk_item.is_line_info():
         atom = Atom(tk_item)
         node = Node(NodeType.ATOM)
@@ -105,6 +106,7 @@ def parse_node(tokens):
     tk = tokens[0]
     if tk is None:
         return None
+
     maybe_node = parse_atom(tk)
     if maybe_node != None:
         adjusted_result = adjusted_node(maybe_node, tokens)

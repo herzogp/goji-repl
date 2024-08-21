@@ -81,9 +81,11 @@ class TokenItem:
     def is_line_end(self):
         return self.t == Token.LINE_END
 
+    @property
     def value(self):
         return self.v
 
+    @property
     def name(self):
         return self.t.name
 
@@ -151,7 +153,7 @@ class Tokenizer:
 
     def add_token(self, tk, s=''):
         new_tk = TokenItem(tk, s)
-        self.tokens.append(tk)
+        self.tokens.append(new_tk)
         self.reset()
 
     def emit_token(self):
