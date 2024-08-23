@@ -1,4 +1,3 @@
-y1 = 17
 (define y1 17)
 (define y2 1.02e3)
 y1

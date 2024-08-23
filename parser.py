@@ -14,10 +14,36 @@ from node import (
     Node,
 )
 
+class ParseInfo:
+    def __init__(self):
+        self._filename = ''
+        self._line = 0
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        self._filename = value
+
+    @property
+    def line(self):
+        return self._line
+
+    @line.setter
+    def line(self, value):
+        print("Setting line to: ", value)
+        self._line = value
+
+    def has_line_numbers(self):
+        return self._line > 0
+
 
 # parse_atom: TokenItem -> Node
-def parse_atom(tk_item):
-    print("parse_atom: ", tk_item, "  type: ", type(tk_item))
+def parse_atom(parseInfo, tk_item):
+    if parseInfo.has_line_numbers():
+        print("%s[%d] parse_atom: %s" % (parseInfo.filename, parseInfo.line, tk_item))
     if tk_item.has_value() or tk_item.is_line_info():
         atom = Atom(tk_item)
         node = Node(NodeType.ATOM)
@@ -28,13 +54,13 @@ def parse_atom(tk_item):
 
 # return None if no adjustment is warranted
 # Otherwise, returns the adjusted node, and the number of additional tokens consummed
-def adjusted_node(maybe_node, more_tokens):
+def adjusted_node(parseInfo, maybe_node, more_tokens):
     the_atom = maybe_node.get_value()
     the_atom_val = the_atom.get_value()
     if the_atom.issymbol():
         if (the_atom_val == '#') and (len(more_tokens) > 1):
             the_next_tk = more_tokens[1]
-            the_next_node = parse_atom(the_next_tk)
+            the_next_node = parse_atom(parseInfo, the_next_tk)
             did_apply = False
             if the_next_node != None:
                 if the_next_node.did_apply_symbol(the_atom_val):
@@ -57,7 +83,7 @@ def show_tokens(tokens, n):
         print("")
 
 # parse_list: Stream<TokenItem> -> Node
-def parse_list(tokens):
+def parse_list(parseInfo, tokens):
     nx = len(tokens)
     if nx == 0:
         return None
@@ -67,10 +93,10 @@ def parse_list(tokens):
     while not tk.is_list_end():
         # One of: [IDENT, INTEGER, FLOAT, TEXT, BOOL]
         if tk.has_value(): 
-            new_node = parse_atom(tk)
+            new_node = parse_atom(parseInfo, tk)
             if new_node != None:
                 # (was) node.add(new_node)
-                adjusted_result = adjusted_node(new_node, tokens[idx:])
+                adjusted_result = adjusted_node(parseInfo, new_node, tokens[idx:])
                 if adjusted_result != None:
                     new_node, num_tokens_used = adjusted_result
                     idx = idx + num_tokens_used
@@ -79,7 +105,7 @@ def parse_list(tokens):
         # One of: [LPAREN]
         elif tk.is_list_begin():
             idx = idx + 1
-            maybe_list = parse_list(tokens[idx:])
+            maybe_list = parse_list(parseInfo, tokens[idx:])
             if maybe_list == None:
                 print("Unexpected end of sub-list")
                 return None
@@ -98,7 +124,7 @@ def parse_list(tokens):
     return node, tokens[idx+1:] # should be number of tokens consummed, not [1:]
 
 # parse_node: Stream<TokenItem> -> Node
-def parse_node(tokens):
+def parse_node(parseInfo, tokens):
     if len(tokens) == 0:
         return None
 
@@ -107,28 +133,39 @@ def parse_node(tokens):
     if tk is None:
         return None
 
-    maybe_node = parse_atom(tk)
-    if maybe_node != None:
-        adjusted_result = adjusted_node(maybe_node, tokens)
-        new_idx = 1
-        if adjusted_result != None:
-            maybe_node, num_tokens_used = adjusted_result
-            new_idx = new_idx + num_tokens_used
-        return maybe_node, tokens[new_idx:]
-
-    # Must be a LIST - better check anyway
-    elif tk.is_list_begin():
-        # either returns None
-        # or (node, [more_tokens])
-        return parse_list(tokens[1:])
-    elif tk.is_line_info():
-        print("we have line_info: ", tk.value)
-        return parse_node(tokens[1:])
+    elif tk.is_line_end():
+        lx = len(tokens)
+        if lx > 1:
+            next_tk = tokens[1]
+            if next_tk.is_line_begin():
+                if len(next_tk.value) > 0:
+                    parseInfo.line = int(next_tk.value)
+                return parse_node(parseInfo, tokens[2:])
+        return parse_node(parseInfo, tokens[1:])
+    elif tk.is_line_begin():
+        parseInfo.line = int(tk.value)
+        return parse_node(parseInfo, tokens[1:])
     else:
-        if not tk is None:
-            print('Unexpected?(a): ', tk)
-            print('Unexpected?: ', str(tk))
-        return None
+        maybe_node = parse_atom(parseInfo, tk)
+        if maybe_node != None:
+            adjusted_result = adjusted_node(parseInfo, maybe_node, tokens)
+            new_idx = 1
+            if adjusted_result != None:
+                maybe_node, num_tokens_used = adjusted_result
+                new_idx = new_idx + num_tokens_used
+            return maybe_node, tokens[new_idx:]
+
+        # Update line info when provided
+        # Must be a LIST - better check anyway
+        elif tk.is_list_begin():
+            # either returns None
+            # or (node, [more_tokens])
+            return parse_list(parseInfo, tokens[1:])
+        else:
+            if not tk is None:
+                print('Unexpected?(a): ', tk)
+                print('Unexpected?: ', str(tk))
+            return None
 
 # parse_program: FilePath -> Node[]
 def new_parse_program(file_path):
@@ -138,11 +175,13 @@ def new_parse_program(file_path):
         print('%i ~new~ tokens found in "%s"' % (tk_count, file_path))
 
     all_nodes = []
-    parsed_result = parse_node(tokens)
+    parseInfo = ParseInfo()
+    parseInfo.filename = file_path
+    parsed_result = parse_node(parseInfo, tokens)
     while parsed_result != None:
         node, tokens = parsed_result
         all_nodes.append(node)
-        parsed_result = parse_node(tokens)
+        parsed_result = parse_node(parseInfo, tokens)
     return all_nodes
 
 def parse_program(file_path):
@@ -152,9 +191,11 @@ def parse_program(file_path):
         print('%i tokens found in "%s"' % (tk_count, file_path))
 
     all_nodes = []
-    parsed_result = parse_node(tokens)
+    parseInfo = ParseInfo()
+    parseInfo.filename = file_path
+    parsed_result = parse_node(parseInfo, tokens)
     while parsed_result != None:
         node, tokens = parsed_result
         all_nodes.append(node)
-        parsed_result = parse_node(tokens)
+        parsed_result = parse_node(parseInfo, tokens)
     return all_nodes

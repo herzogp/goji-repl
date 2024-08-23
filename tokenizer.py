@@ -51,6 +51,7 @@ class TokenItem:
         return self.t == Token.TEXT \
             or self.t == Token.QTEXT \
             or self.t == Token.SYMBOL \
+            or self.t == Token.LINE_BEGIN \
             or self.t == Token.NUMERIC
 
     def is_line_info(self):
