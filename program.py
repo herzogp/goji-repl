@@ -11,6 +11,7 @@ from eval import (
 
 from parser import (
     parse_program,
+    new_parse_program,
 )
 
 from atom import (
@@ -31,7 +32,7 @@ from tokenizer import (
 class EngineVersion(Enum):
     V0_1_0 = 3
 
-def run_program(program_file):
+def run_program(program_file, new_parser):
     # Setup the root environment
     program_env = EnvTable()
 
@@ -68,11 +69,16 @@ def run_program(program_file):
     program_env.set_item(builtin)
 
     # parse and show/eval AST
-    all_nodes = parse_program(program_file)
-    for idx, n in enumerate(all_nodes):
-        print("\n[%2.2i] %s" % (idx, str(n)))
-        node_val = eval_node(program_env, n)
-        print("=> %s" % str(node_val))
+    if new_parser:
+        all_nodes = new_parse_program(program_file)
+    else:
+        all_nodes = parse_program(program_file)
+
+    if not new_parser:
+        for idx, n in enumerate(all_nodes):
+            print("\n[%2.2i] %s" % (idx, str(n)))
+            node_val = eval_node(program_env, n)
+            print("=> %s" % str(node_val))
  
     # show ending environment
     print("\nGoji Ending Environment:")

@@ -131,6 +131,20 @@ def parse_node(tokens):
         return None
 
 # parse_program: FilePath -> Node[]
+def new_parse_program(file_path):
+    tokens = tokenize_program(file_path)
+    tk_count = len(tokens)
+    if tk_count > 0:
+        print('%i ~new~ tokens found in "%s"' % (tk_count, file_path))
+
+    all_nodes = []
+    parsed_result = parse_node(tokens)
+    while parsed_result != None:
+        node, tokens = parsed_result
+        all_nodes.append(node)
+        parsed_result = parse_node(tokens)
+    return all_nodes
+
 def parse_program(file_path):
     tokens = tokenize_program(file_path)
     tk_count = len(tokens)

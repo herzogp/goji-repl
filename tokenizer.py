@@ -302,8 +302,9 @@ def tokenize_program(file_path):
     for line in all_lines:
         lno = lno + 1
         print("[%4d] %s" % (lno, line))
-        char_iter = itertools.islice(line, 0, None)
-        more_tokens = tokenize(tk, lno, char_iter)
+        if not line.startswith("//"):
+            char_iter = itertools.islice(line, 0, None)
+            more_tokens = tokenize(tk, lno, char_iter)
 
     lx = len(all_lines)
     suffix = 's'
