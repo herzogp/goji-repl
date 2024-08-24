@@ -102,6 +102,7 @@ class ScanContext(Enum):
     IN_DOUBLE_QUOTE = 2
     IN_TEXT = 3
     IN_NUMERIC = 4
+    IN_SYMBOL = 5
 
 # ----------------------------------------------------------------------
 # Tokenizer {
@@ -167,7 +168,10 @@ class Tokenizer:
         elif char == ')':
             self.add_token(Token.LIST_END)
         elif self.issymbol(char):
-            self.add_token(Token.SYMBOL, char)
+            self.state = ScanContext.IN_SYMBOL
+            self.tk_type = Token.SYMBOL
+            self.text = char
+            # self.add_token(Token.SYMBOL, char)
         elif char == self.double_quote:
             self.state = ScanContext.IN_DOUBLE_QUOTE
             self.tk_type = Token.QTEXT
@@ -204,6 +208,14 @@ class Tokenizer:
 
     def did_handle_text(self, char):
         if char.isalpha() or self.isnumeric(char) or (char == '_'):
+            self.text = self.text + char
+        else:
+            self.emit_token()
+            return False
+        return True
+        
+    def did_handle_symbol(self, char):
+        if self.issymbol(char):
             self.text = self.text + char
         else:
             self.emit_token()
@@ -264,6 +276,8 @@ class Tokenizer:
             return self.did_handle_quoted(char, self.double_quote)
         elif state == ScanContext.IN_SINGLE_QUOTE:
             return self.did_handle_quoted(char, self.single_quote)
+        elif state == ScanContext.IN_SYMBOL:
+            return self.did_handle_symbol(char)
         elif state == ScanContext.IN_TEXT:
             return self.did_handle_text(char)
         elif state == ScanContext.IN_NUMERIC:

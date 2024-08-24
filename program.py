@@ -48,23 +48,23 @@ def run_program(program_file, new_parser):
     builtin = EnvItem('seven', make_atom_node(Token.NUMERIC, str(7)))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, '#t')).asbool()
-    builtin = EnvItem('#t', make_node_from_atom(temp_atom))
+    temp_atom = Atom(TokenItem(Token.QTEXT, 'true')).asbool()
+    builtin = EnvItem('true', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
     
-    temp_atom = Atom(TokenItem(Token.QTEXT, '#f')).asbool()
-    builtin = EnvItem('#f', make_node_from_atom(temp_atom))
+    temp_atom = Atom(TokenItem(Token.QTEXT, 'false')).asbool()
+    builtin = EnvItem('false', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, '#define')).asbuiltin()
+    temp_atom = Atom(TokenItem(Token.QTEXT, 'define')).asbuiltin()
     builtin = EnvItem('define', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, '#add')).asbuiltin()
+    temp_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()
     builtin = EnvItem('+', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, '#mult')).asbuiltin()
+    temp_atom = Atom(TokenItem(Token.QTEXT, '*')).asbuiltin()
     builtin = EnvItem('*', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
