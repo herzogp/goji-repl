@@ -72,31 +72,23 @@ class Parser:
             return None
     
     # return None if no adjustment is warranted
-    # Otherwise, returns the adjusted node, and the number of additional tokens consummed
-    def adjusted_node(self, maybe_node, more_tokens):
+    # Otherwise, returns the adjusted node
+    def symbol_as_builtin(self, maybe_node):
         the_atom = maybe_node.get_value()
         the_atom_val = the_atom.get_value()
         if the_atom.issymbol():
-            if (the_atom_val == '#') and (len(more_tokens) > 1):
-                print('Unreachable')
-                the_next_tk = more_tokens[1]
-                the_next_node = self.parse_atom(the_next_tk)
-                did_apply = False
-                if the_next_node != None:
-                    if the_next_node.did_apply_symbol(the_atom_val):
-                        return the_next_node, 1
-            elif the_atom_val == '+':
+            if the_atom_val == '+':
                 new_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
-                return new_node, 0
+                return new_node
             elif the_atom_val == '*':
                 new_atom = Atom(TokenItem(Token.QTEXT, '*')).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
-                return new_node, 0
-        return None
-    
+                return new_node
+        return maybe_node
+
     # parse_list: Stream<TokenItem> -> Node
     def parse_list(self, tokens):
         nx = len(tokens)
@@ -110,12 +102,8 @@ class Parser:
             if tk.has_value(): 
                 new_node = self.parse_atom(tk)
                 if new_node != None:
-                    # (was) node.add(new_node)
-                    adjusted_result = self.adjusted_node(new_node, tokens[idx:])
-                    if adjusted_result != None:
-                        new_node, num_tokens_used = adjusted_result
-                        idx = idx + num_tokens_used
-                    node.add(new_node)
+                    adjusted_node = self.symbol_as_builtin(new_node)
+                    node.add(adjusted_node)
     
             # One of: [LPAREN]
             elif tk.is_list_begin():
@@ -164,21 +152,16 @@ class Parser:
         else:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:
-                adjusted_result = self.adjusted_node(maybe_node, tokens)
-                new_idx = 1
-                if adjusted_result != None:
-                    maybe_node, num_tokens_used = adjusted_result
-                    new_idx = new_idx + num_tokens_used
-                # [PH] return maybe_node, tokens[new_idx:]
-                #
+                adjusted_node = self.symbol_as_builtin(maybe_node)
+
                 # If this atom is a BINARY_OP, setup a Node, and pop its left argument from the node stack
-                the_atom = maybe_node.get_value()
+                the_atom = adjusted_node.get_value()
                 the_atom_val = the_atom.get_value()
                 if the_atom.issymbol():
                     if the_atom.get_value() == '=':
                         print('Found an assignment operator')
                 self.push_node(maybe_node)
-                self.parse_expr(tokens[new_idx:])
+                self.parse_expr(tokens[1:])
     
             # Update line info when provided
             # Must be a LIST - better check anyway
@@ -218,12 +201,8 @@ class Parser:
         else:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:
-                adjusted_result = self.adjusted_node(maybe_node, tokens)
-                new_idx = 1
-                if adjusted_result != None:
-                    maybe_node, num_tokens_used = adjusted_result
-                    new_idx = new_idx + num_tokens_used
-                return maybe_node, tokens[new_idx:]
+                adjusted_node = self.symbol_as_builtin(maybe_node)
+                return adjusted_node, tokens[1:]
     
             # Update line info when provided
             # Must be a LIST - better check anyway
