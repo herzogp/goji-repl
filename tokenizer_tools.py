@@ -38,6 +38,8 @@ def show_token_diff(actual, expected):
         if got == want:
             print('[' + str(idx) +']', got)
         else:
+            print("GOT:  ", got, type(got))
+            print("WANT: ", want, type(want))
             failed = failed + 1
             print('[' + str(idx) + ']', str(got) + ' // ' + str(want))
     return failed

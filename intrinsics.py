@@ -14,8 +14,8 @@ from env import(
 )
 
 def num_args_for_op(op):
-    if op == Builtin.DEFINE:
-        return 'define', 2
+    if op == Builtin.OP_ASSIGN:
+        return '=', 2
     elif op == Builtin.OP_ADD:
         return '+', 2
     elif op == Builtin.OP_MULT:

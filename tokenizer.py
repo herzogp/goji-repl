@@ -317,7 +317,7 @@ def tokenize_program(file_path):
     for line in all_lines:
         lno = lno + 1
         print("[%4d] %s" % (lno, line))
-        if not line.startswith("//"):
+        if not line.startswith("//") and len(line) > 0:
             char_iter = itertools.islice(line, 0, None)
             more_tokens = tokenize(tk, lno, char_iter)
 

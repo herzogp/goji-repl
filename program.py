@@ -56,8 +56,8 @@ def run_program(program_file, new_parser):
     builtin = EnvItem('false', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, 'define')).asbuiltin()
-    builtin = EnvItem('define', make_node_from_atom(temp_atom))
+    temp_atom = Atom(TokenItem(Token.QTEXT, '=')).asbuiltin()
+    builtin = EnvItem('=', make_node_from_atom(temp_atom))
     program_env.set_item(builtin)
 
     temp_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()

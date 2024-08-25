@@ -1,7 +1,7 @@
 from enum import Enum
 
 class Builtin(Enum):
-    DEFINE = 1
+    OP_ASSIGN = 1
     OP_ADD = 2
     OP_MULT = 3
 
@@ -73,8 +73,11 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
 
     def asbuiltin(self):
         if self._typ == AtomType.TEXT:
-            if self._val == 'define':
-                self._val = Builtin.DEFINE
+            if self._val == '=':
+                self._val = Builtin.OP_ASSIGN
+                self._typ = AtomType.FUNCTION
+            elif self._val == 'define':
+                self._val = Builtin.OP_ASSIGN
                 self._typ = AtomType.FUNCTION
             elif (self._val == '+'):
                 self._val = Builtin.OP_ADD

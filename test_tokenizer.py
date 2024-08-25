@@ -15,10 +15,11 @@ from tokenizer_tools import (
 
 @pytest.fixture
 def basic_tokens():
-    # (define x1(a b) (+ a b))
+    # (= x1(a b) (+ a b))
     expected_1 = [
+        TokenItem(Token.LINE_BEGIN, '2'),
         TokenItem(Token.LIST_BEGIN),
-        TokenItem(Token.TEXT, 'define'),
+        TokenItem(Token.SYMBOL, '='),
         TokenItem(Token.LIST_BEGIN),
         TokenItem(Token.TEXT, 'x1'),
         TokenItem(Token.TEXT, 'a'),
@@ -30,12 +31,14 @@ def basic_tokens():
         TokenItem(Token.TEXT, 'b'),
         TokenItem(Token.LIST_END),
         TokenItem(Token.LIST_END),
+        TokenItem(Token.LINE_END),
     ]
     
-    # (define x2(b) (* b b))
+    # (= x2(b) (* b b))
     expected_2 = [
+        TokenItem(Token.LINE_BEGIN, '3'),
         TokenItem(Token.LIST_BEGIN),
-        TokenItem(Token.TEXT, 'define'),
+        TokenItem(Token.SYMBOL, '='),
         TokenItem(Token.LIST_BEGIN),
         TokenItem(Token.TEXT, 'x2'),
         TokenItem(Token.TEXT, 'b'),
@@ -46,20 +49,24 @@ def basic_tokens():
         TokenItem(Token.TEXT, 'b'),
         TokenItem(Token.LIST_END),
         TokenItem(Token.LIST_END),
+        TokenItem(Token.LINE_END),
     ]
     
     # (  x1 "abc"  7   'xyz'   )
     expected_3 = [
+        TokenItem(Token.LINE_BEGIN, '6'),
         TokenItem(Token.LIST_BEGIN),
         TokenItem(Token.TEXT, 'x1'),
         TokenItem(Token.QTEXT, 'abc'),
         TokenItem(Token.NUMERIC, '7'),
         TokenItem(Token.QTEXT, 'xyz'),
         TokenItem(Token.LIST_END),
+        TokenItem(Token.LINE_END),
     ]
     
     # (x2 (x1 40.1 52))
     expected_4 = [
+        TokenItem(Token.LINE_BEGIN, '7'),
         TokenItem(Token.LIST_BEGIN, ''),
         TokenItem(Token.TEXT, 'x2'),
         TokenItem(Token.LIST_BEGIN, ''),
@@ -68,6 +75,7 @@ def basic_tokens():
         TokenItem(Token.NUMERIC, '52'),
         TokenItem(Token.LIST_END, ''),
         TokenItem(Token.LIST_END, ''),
+        TokenItem(Token.LINE_END),
     ]
 
     return expected_1 + expected_2 + expected_3 + expected_4

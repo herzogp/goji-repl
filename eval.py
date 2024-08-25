@@ -99,7 +99,7 @@ def eval_node(environment, node):
         return 0
 
 def apply_op(environment, op, all_args):
-    if op == Builtin.DEFINE:
+    if op == Builtin.OP_ASSIGN:
         # The name of the item to define
         name_node = all_args[0]
         if not name_node.isatom():

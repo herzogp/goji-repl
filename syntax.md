@@ -18,7 +18,7 @@ VALUE ::=
        | TEXT
 
 BINARY_OP ::= '+' | '*' | '<' | '>' | '&' | '|'
-DEFINE_OP ::= '='
+ASSIGN_OP ::= '='
 UNARY_OP ::= '!'
 
 LIST_BEGIN ::= '('
@@ -27,7 +27,7 @@ LIST_END ::= ')'
 EXPR ::= 
       | VALUE 
       | IDENT
-      | IDENT DEFINE_OP EXPR
+      | IDENT ASSIGN_OP EXPR
       | LIST_BEGIN EXPR LIST_END
       | EXPR BINARY_OP EXPR
       | UNARY_OP EXPR

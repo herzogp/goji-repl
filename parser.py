@@ -77,7 +77,12 @@ class Parser:
         the_atom = maybe_node.get_value()
         the_atom_val = the_atom.get_value()
         if the_atom.issymbol():
-            if the_atom_val == '+':
+            if the_atom_val == '=':
+                new_atom = Atom(TokenItem(Token.QTEXT, '=')).asbuiltin()
+                new_node = Node(NodeType.ATOM)
+                new_node.add(new_atom)
+                return new_node
+            elif the_atom_val == '+':
                 new_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
@@ -127,7 +132,7 @@ class Parser:
         return node, tokens[idx+1:] # should be number of tokens consummed, not [1:]
    
     def parse_expr(self, tokens):
-        # should see an Atom followed by LINE_END, or BINARY_OP or DEFINE_OP
+        # should see an Atom followed by LINE_END, or BINARY_OP or ASSIGN_OP
         # could see a LINE_BEGIN or a LINE_END anywhere 
         if len(tokens) == 0:
             return None
