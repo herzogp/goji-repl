@@ -24,26 +24,6 @@ from tokenizer import (
     tokenize_program,
 )
 
-def env_item_to_atom(env_item):
-    if env_item.isinteger():
-        return Atom(TokenItem(Token.NUMERIC, str(env_item.value[0])))
-    elif env_item.isfloat():
-        return Atom(TokenItem(Token.NUMERIC, str(env_item.value[0])))
-    elif env_item.istext():
-        return Atom(TokenItem(Token.TEXT, env_item.value[0]))
-    elif env_item.isbool():
-        if env_item.value[0]:
-            this_atom = Atom(TokenItem(Token.TEXT, '#t'))
-            return this_atom.asbool()
-        else:
-            this_atom = Atom(TokenItem(Token.TEXT, '#f'))
-            return this_atom.asbool()
-    # not sure how to do this yet
-    # elif env_item.isfunction():
-    #     return TokenItem(Token.BUILTIN, env_item.value[0])
-    else:
-        return Atom(TokenItem(Token.LIST_BEGIN, ''))
-
 # ATOM values are not the same as primitive values
 # e.g. ATOM(BOOL, 't') is not the same as True
 # and ATOM(INTEGER, 19) is not the same as 19
@@ -113,7 +93,7 @@ def apply_op(environment, op, all_args):
 
         # The value to be defined
         val_atom = eval_node(environment, all_args[1]) # should return a NewAtom-INTEGER(17), not an EnvItem
-        print("define(%s, %s)" % (item_name, val_atom.get_value()))
+        print("ASSIGN(%s, %s)" % (item_name, val_atom.get_value()))
         return define_item(environment, item_name, val_atom)
     elif op == Builtin.OP_ADD:
         left_operand = eval_node(environment, all_args[0])
@@ -122,7 +102,6 @@ def apply_op(environment, op, all_args):
         right_val = right_operand.get_value()
         result = left_val + right_val
         print("ADD(%d, %d)" % (left_val, right_val))
-        # print("==> %d" % result)
         new_atom = Atom(TokenItem(Token.NUMERIC,str(result)))
         return new_atom
     elif op == Builtin.OP_MULT:
@@ -132,6 +111,5 @@ def apply_op(environment, op, all_args):
         right_val = right_operand.get_value()
         result = left_val * right_val
         print("MULT(%d, %d)" % (left_val, right_val))
-        # print("==> %d" % result)
         new_atom = Atom(TokenItem(Token.NUMERIC, str(result)))
         return new_atom

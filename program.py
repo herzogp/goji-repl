@@ -79,6 +79,16 @@ def run_program(program_file, new_parser):
             print("\n[%2.2i] %s" % (idx, str(n)))
             node_val = eval_node(program_env, n)
             print("=> %s" % str(node_val))
+    else:
+        if all_nodes == None:
+            print("Nothing to evaluate")
+        else:
+            print("%d nodes will be evaluated" % len(all_nodes))
+        for idx, n in enumerate(all_nodes):
+            print("\n[%2.2i] %s" % (idx, str(n)))
+            node_val = eval_node(program_env, n)
+            print("=> %s" % str(node_val))
+
  
     # show ending environment
     print("\nGoji Ending Environment:")

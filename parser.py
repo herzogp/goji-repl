@@ -7,6 +7,7 @@ from tokenizer import (
 from atom import (
     AtomType,
     Atom,
+    Builtin,
 )
 
 from node import (
@@ -44,27 +45,31 @@ class Parser:
     # Top of stack is end of list
     # Bottom of stack is start of list
     def push_node(self, node):
+        print("  >> didPush: ", node)
         self._nodes_seen.append(node)
 
     def pop_node(self):
         lx = len(self._nodes_seen) - 1
         if lx < 0:
+            print("pop_node() failed - returns None")
             return None
-        return self._nodes_seen.pop()
+        popped_node = self._nodes_seen.pop()
+        print("  << didPop: %s, new length: %d" % (popped_node, len(self._nodes_seen)))
+        # return self._nodes_seen.pop()
+        return popped_node
 
     def peek_node(self):
         lx = len(self._nodes_seen) - 1
         if lx < 0:
             return None
         return self._nodes_seen[lx]
-
+    
     def clear_nodes(self):
         self._nodes_seen = []
-
+    
     # parse_atom: TokenItem -> Node
     def parse_atom(self, tk_item):
         if self.has_line_numbers():
-            # print("%s[%d] parse_atom: %s" % (self.filename, self.line, tk_item))
             print("[%2d] parse_atom: %s" % (self.line, tk_item))
         if tk_item.has_value():
             return make_node_from_atom(Atom(tk_item))
@@ -132,6 +137,7 @@ class Parser:
         return node, tokens[idx+1:] # should be number of tokens consummed, not [1:]
    
     def parse_expr(self, tokens):
+        # print("ENTERED parse_expr")
         # should see an Atom followed by LINE_END, or BINARY_OP or ASSIGN_OP
         # could see a LINE_BEGIN or a LINE_END anywhere 
         if len(tokens) == 0:
@@ -143,6 +149,7 @@ class Parser:
             return None
     
         elif tk.is_line_end():
+            self.clear_nodes()
             lx = len(tokens)
             if lx > 1:
                 next_tk = tokens[1]
@@ -158,13 +165,41 @@ class Parser:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:
                 adjusted_node = self.symbol_as_builtin(maybe_node)
-
-                # If this atom is a BINARY_OP, setup a Node, and pop its left argument from the node stack
+                print("adjusted_node: ", adjusted_node)
+                # If this atom is a BINARY_OP, 
+                # establish a new Node,
+                # pop its left argument from the node stack
+                # append its right argument from the tokens ahead
                 the_atom = adjusted_node.get_value()
                 the_atom_val = the_atom.get_value()
-                if the_atom.issymbol():
-                    if the_atom.get_value() == '=':
+                print("the_atom: ", the_atom)
+                print("the_atom_val: ", the_atom_val)
+                if the_atom.isfunction():
+                    print("adjusted_node is a symbol: ", adjusted_node)
+                    #if the_atom.get_value() == '=':
+                    if the_atom_val == Builtin.OP_ASSIGN:
                         print('Found an assignment operator')
+                        # establish a new node
+                        node = Node(NodeType.LIST) # should be more like NodeType.EXPR
+                        node.add(adjusted_node)
+
+                        # pop left arg from stack (error if cant pop)
+                        left_node = self.pop_node()
+                        if left_node == None:
+                            print("ERROR: No L-value provided for assignment %s: %d" % (self.filename, self.line))
+                            return None
+                        else:
+                            print("LEFT_NODE was: ", left_node)
+                        node.add(left_node)
+                        parse_result = self.parse_expr(tokens[1:])
+                        if parse_result != None:
+                            right_node, more_tokens = parse_result
+                            node.add(right_node)
+                            print("RIGHT_NODE is: ", right_node)
+                            return node, more_tokens
+                        else:
+                            print("RIGHT_NODE is not there...")
+                            return None
                 self.push_node(maybe_node)
                 self.parse_expr(tokens[1:])
     
@@ -183,6 +218,7 @@ class Parser:
         
     # parse_node: Stream<TokenItem> -> Node
     def parse_node(self, tokens):
+        print("ENTERED parse_node")
         if len(tokens) == 0:
             return None
     
@@ -232,8 +268,16 @@ def new_parse_program(file_path):
     parseInfo = Parser()
     parseInfo.filename = file_path
     parsed_result = parseInfo.parse_expr(tokens)
+    if parsed_result == None:
+        print("1. parse_expr() returned: None")
+    else:
+        print("1. parse_expr() returned: ", parsed_result[0])
     while parsed_result != None:
         node, tokens = parsed_result
+        if node == None:
+            print("2. parse_expr() returned: None")
+        else:
+            print("2. parse_expr() returned: ", node)
         all_nodes.append(node)
         parsed_result = parseInfo.parse_expr(tokens)
     return all_nodes
