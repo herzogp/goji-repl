@@ -1,5 +1,10 @@
 # New Syntax
 
+## Notes
+
+  { "folke/flash.nvim", enabled = false },
+
+
 y1 # value of y1 in current Env
 'abc' # value
 206 # value

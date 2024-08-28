@@ -202,18 +202,19 @@ class Parser:
                         else:
                             print("%s LEFT_NODE was: " % INDENT, left_node)
                         node.add(left_node)
+                        print("%s TRY TO GET RIGHT_NODE for line [%2d]" % (INDENT, self.line))
                         parse_result = self.parse_expr(tokens[1:])
                         if parse_result != None:
                             right_node, more_tokens = parse_result
                             node.add(right_node)
-                            print("%s RIGHT_NODE is: " % INDENT, right_node)
+                            print("%s SUCCESS: RIGHT_NODE is: " % INDENT, right_node)
                             return node, more_tokens
                         else:
-                            print("%s RIGHT_NoDE is not there..." % INDENT)
+                            print("%s FAILED: RIGHT_NoDE is not there..." % INDENT)
                             return nil_node, tokens[1:]
                             # return None
                 self.push_node(maybe_node)
-                self.parse_expr(tokens[1:])
+                return self.parse_expr(tokens[1:])
     
             # Update line info when provided
             # Must be a LIST - better check anyway
