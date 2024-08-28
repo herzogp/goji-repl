@@ -91,7 +91,8 @@ class EnvItem:
             return 'nil'
         return '%s: %s' % (self.name, self.value_repr)
 
-nil = EnvItem('nil', make_atom_node(Token.UNKNOWN))
+nil_node = make_atom_node(Token.UNKNOWN)
+nil = EnvItem('nil', nil_node)
 
 
 class EnvTable:
