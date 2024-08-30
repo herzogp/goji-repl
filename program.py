@@ -9,7 +9,7 @@ from eval import (
     eval_node,
 )
 
-from parser import (
+from old_parser import (
     parse_program,
     new_parse_program,
 )
@@ -32,7 +32,16 @@ from tokenizer import (
 class EngineVersion(Enum):
     V0_1_0 = 3
 
-def run_program(program_file, new_parser):
+def isOldParser(which_parser):
+    return which_parser == 'old'
+
+def isNewParser(which_parser):
+    return which_parser == 'new'
+
+def isPrattParser(which_parser):
+    return which_parser == 'pratt'
+
+def run_program(program_file, which_parser):
     # Setup the root environment
     program_env = EnvTable()
 
@@ -69,21 +78,19 @@ def run_program(program_file, new_parser):
     program_env.set_item(builtin)
 
     # parse and show/eval AST
-    if new_parser:
+    all_nodes = None
+    if isPrattParser(which_parser):
+        print("Would use Pratt Parser")
+    elif isNewParser(which_parser):
         all_nodes = new_parse_program(program_file)
     else:
         all_nodes = parse_program(program_file)
 
-    if not new_parser:
-        for idx, n in enumerate(all_nodes):
-            print("\n[%2.2i] %s" % (idx, str(n)))
-            node_val = eval_node(program_env, n)
-            print("=> %s" % str(node_val))
+    # Time to evaluate
+    if all_nodes == None:
+        print("Nothing to evaluate")
     else:
-        if all_nodes == None:
-            print("Nothing to evaluate")
-        else:
-            print("%d nodes will be evaluated" % len(all_nodes))
+        print("%d nodes will be evaluated" % len(all_nodes))
         for idx, n in enumerate(all_nodes):
             print("\n[%2.2i] %s" % (idx, str(n)))
             node_val = eval_node(program_env, n)

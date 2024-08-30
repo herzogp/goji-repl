@@ -14,7 +14,7 @@ from intrinsics import (
     num_args_for_op,
 )
 
-from parser import (
+from old_parser import (
     Atom,
 )
 
