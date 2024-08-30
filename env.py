@@ -8,7 +8,7 @@ from atom import(
     Atom,
 )
 
-from tokenizer import(
+from tokenizer.tokens import(
     Token,
     TokenItem,
 )
@@ -34,11 +34,11 @@ class EnvItem:
     def islist(self):
         return self._node.islist()
 
-    def istext(self):
+    def isstring(self):
         if not self._node.isatom():
             return False
         atom = self._node.get_value()
-        return atom.istext()
+        return atom.isstring()
 
     def isinteger(self):
         if not self._node.isatom():
@@ -151,7 +151,7 @@ class EnvTable:
 
     def get_text(self, item_name):
         env_item = self.get_item(item_name)
-        if env_item.istext():
+        if env_item.isstring():
             return env_item.value.get_value()
         return "" 
 

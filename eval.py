@@ -18,7 +18,7 @@ from old_parser import (
     Atom,
 )
 
-from tokenizer import (
+from tokenizer.tokens import (
     Token,
     TokenItem,
     tokenize_program,

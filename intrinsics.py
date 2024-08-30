@@ -23,7 +23,7 @@ def num_args_for_op(op):
     return str(op), 0
 
 # nam is a primitive/native TEXT
-# atom must support isinteger(), isfloat(), istext(), isbool() and get_value()
+# atom must support isinteger(), isfloat(), isstring(), isbool() and get_value()
 def define_item(environment, nam, atom):
     does_exist = environment.hasTopLevelValue(nam)
     if does_exist:

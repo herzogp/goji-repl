@@ -1,4 +1,4 @@
-from tokenizer import (
+from tokenizer.tokens import (
     tokenize_program,
     Token, 
     TokenItem,

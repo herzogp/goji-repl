@@ -24,7 +24,7 @@ from node import (
     make_node_from_atom,
 )
 
-from tokenizer import (
+from tokenizer.tokens import (
     Token,
     TokenItem,
 )

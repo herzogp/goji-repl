@@ -2,7 +2,7 @@ import os
 import itertools
 from enum import Enum
 
-from tokenizer_tools import lines_to_process
+from tokenizer.tools import lines_to_process
 
 class Token(Enum):
     UNKNOWN = 0 # Unexpected lexical finding
@@ -132,7 +132,7 @@ class Tokenizer:
         self.state = ScanContext.IN_NOTHING
         self.info = {}
 
-    def istext(self, char):
+    def isalpha(self, char):
         return char.isalpha()
 
     def isnumeric(self, char):
@@ -290,7 +290,7 @@ class Tokenizer:
 # End class Tokekenizer
 # ----------------------------------------------------------------------
 
-def tokenize(tk, lno, char_iter):    
+def tokenize_line(tk, lno, char_iter):    
 
 
     tk.add_token(Token.LINE_BEGIN, str(lno))
@@ -319,7 +319,7 @@ def tokenize_program(file_path):
         print("[%4d] %s" % (lno, line))
         if not line.startswith("//") and len(line) > 0:
             char_iter = itertools.islice(line, 0, None)
-            more_tokens = tokenize(tk, lno, char_iter)
+            more_tokens = tokenize_line(tk, lno, char_iter)
 
     lx = len(all_lines)
     suffix = 's'

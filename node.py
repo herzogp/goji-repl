@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tokenizer import(
+from tokenizer.tokens import(
     Token,
     TokenItem,
 )

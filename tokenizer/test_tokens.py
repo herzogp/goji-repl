@@ -1,13 +1,13 @@
 import itertools
 import pytest
 
-from tokenizer import (
+from tokenizer.tokens import (
     tokenize_program, 
     Token, 
     TokenItem,
 )
 
-from tokenizer_tools import (
+from tokenizer.tools import (
     lines_to_process, 
     show_token_diff,
     # show_tokens,

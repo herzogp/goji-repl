@@ -6,7 +6,7 @@ class Builtin(Enum):
     OP_MULT = 3
 
 class AtomType(Enum):
-    TEXT = 1
+    STRING = 1
     INTEGER = 2
     FLOAT = 3
     IDENT = 4
@@ -25,7 +25,7 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
             self._typ = AtomType.IDENT
             self._val = token_val
         elif token_item.is_literal_text():
-            self._typ = AtomType.TEXT
+            self._typ = AtomType.STRING
             self._val = token_val
         elif token_item.is_numeric():
             self._typ = AtomType.INTEGER # (or FLOAT)
@@ -60,7 +60,7 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
             return True
 
     def asbool(self):
-        if self._typ == AtomType.TEXT:
+        if self._typ == AtomType.STRING:
             if self._val == 'true':
                 self._val = True
                 self._typ = AtomType.BOOL
@@ -72,7 +72,7 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
         return self
 
     def asbuiltin(self):
-        if self._typ == AtomType.TEXT:
+        if self._typ == AtomType.STRING:
             if self._val == '=':
                 self._val = Builtin.OP_ASSIGN
                 self._typ = AtomType.FUNCTION
@@ -107,8 +107,8 @@ class Atom: # Can return AtomType.SYMBOL (but not AtomType.BOOL)
         return self._typ == AtomType.FLOAT
 
     # Equivalent method for EnvItem
-    def istext(self):
-        return self._typ == AtomType.TEXT
+    def isstring(self):
+        return self._typ == AtomType.STRING
 
     def issymbol(self):
         return self._typ == AtomType.SYMBOL
