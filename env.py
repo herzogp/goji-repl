@@ -91,7 +91,7 @@ class EnvItem:
             return 'nil'
         return '%s: %s' % (self.name, self.value_repr)
 
-nil_node = make_atom_node(Token.UNKNOWN)
+nil_node = make_atom_node(Token.INPUT_END)
 nil = EnvItem('nil', nil_node)
 
 

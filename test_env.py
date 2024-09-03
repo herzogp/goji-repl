@@ -43,7 +43,7 @@ class TestEnvItem:
         assert got == want
 
     def test_env_nil_item(self):
-        nil_item = EnvItem('nil', make_atom_node(Token.UNKNOWN))
+        nil_item = EnvItem('nil', make_atom_node(Token.INPUT_END))
         got = str(nil_item)
         want = 'nil'
         assert got == want
@@ -123,7 +123,7 @@ class TestEnvTable:
     def test_add_nil_item(self, root_env):
         old_count = root_env.size
         root_env.set_item(nil)
-        root_env.set_item(EnvItem("nil", make_atom_node(Token.UNKNOWN)))
+        root_env.set_item(EnvItem("nil", make_atom_node(Token.INPUT_END)))
         new_count = root_env.size
         assert old_count == new_count
 

@@ -74,7 +74,11 @@ def basic_tokens():
         TokenItem(Token.LINE_END).set_meta(7,18),
     ]
 
-    return expected_1 + expected_2 + expected_3 + expected_4
+    expected_end = [
+        TokenItem(Token.INPUT_END),
+    ]
+
+    return expected_1 + expected_2 + expected_3 + expected_4 + expected_end
 
 
 #  Test the tokenizer

@@ -52,6 +52,24 @@ class FileParser:
     def has_line_numbers(self):
         return self._line > 0
 
+    #----------------------------------------------------------------------
+    # Top-level function
+    #----------------------------------------------------------------------
+    # DoParse: tokens[] -> ast.BlockStatement
+    #
+    # 0. declare Body ast.Statement[] # empty list
+    #
+    # 1. register all rules
+    #
+    # 2. instantiate a Parser 'p' (with these tokens)
+    #
+    # 3. while p.has_tokens():
+    #    st = parse_stmt(p)
+    #    body.append(st)
+    #
+    # 4. return st.BlockStatement(body)
+    # p.parse_stmt()
+    #----------------------------------------------------------------------
     def parse(self):
         # parsed_result = parseInfo.parse_expr(self.tokens)
         p = Parser(self._symtokens)
@@ -62,15 +80,6 @@ class Parser:
         self._tokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
-        self._lno = 0
-        # while the token at pos is a LINE_INFO:
-        # record the line info, and advance to the next token
-        while self._pos < self._ntx:
-            symtoken = self._tokens[self._pos]
-            if symtoken.symtype != SymbolType.LINE_INFO:
-                break
-            self._lno = symtoken.symvalue
-            self._pos = self._pos + 1
 
     def has_tokens(self):
         return self._pos < self._ntx
@@ -98,10 +107,10 @@ class Parser:
         symtok = self.current_token()
         if symtok.symtype != type_to_skip:
             if err_msg == '':
-                err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtoken.name))
+                err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtoken.name)
             raise err_msg
         p.advance()
-        
+
     def advance(self):
         idx = self._pos + 1
         if idx <= self._ntx:
@@ -221,18 +230,3 @@ def pratt_parse_program(file_path):
 
 
 
-# Top-level function
-# DoParse: tokens[] -> ast.BlockStatement
-#
-# 0. declare Body ast.Statement[] # empty list
-#
-# 1. register all rules
-#
-# 2. instantiate a Parser 'p' (with these tokens)
-#
-# 3. while p.has_tokens():
-#    st = parse_stmt(p)
-#    body.append(st)
-#
-# 4. return st.BlockStatement(body)
-# p.parse_stmt()

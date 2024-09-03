@@ -1,5 +1,11 @@
 from parser.rules import (
-    rule_for_token_type,
+    BindingPower,
+    null_rule_for_token_type,
+    left_rule_for_token_type,
+)
+
+from parser.symbols import (
+    SymbolType,
 )
 
 # Parser -> ast.Expr
@@ -26,8 +32,9 @@ def parse_primary_expr(p):
 # and advances the parser position
 def parse_binary_expr(p, left_expr, left_bp):
     operator = p.current_token()
+    operator_bp = bp_for_token_type(operator.symtype)
     p.advance()
-    right_expr = parse_expr(p, left_bp)
+    right_expr = parse_expr(p, operator_bp) # PH - was left_bp
     return BinaryExpr(operator, left_expr, right_expr)
 
 # Parser -> BindingPower -> ast.Expr
@@ -86,5 +93,6 @@ def parse_assignment_expr(p, left_expr, bp):
 def parse_grouping_expr(p):
     p.skip_one(SymbolType.LEFT_PAREN)
     grouped_expr = parse_expr(p, BindingPower.DEFAULT_BP)
-	p.expect(lexer.RIGHT_PAREN)
+    p.skip_one(SymbolType.RIGHT_PAREN)
     return grouped_expr
+
