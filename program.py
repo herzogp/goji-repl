@@ -1,5 +1,9 @@
 from enum import Enum
 
+from parser.driver import (
+    pratt_parse_program,
+)
+
 from env import (
     EnvItem,
     EnvTable,
@@ -80,7 +84,7 @@ def run_program(program_file, which_parser):
     # parse and show/eval AST
     all_nodes = None
     if isPrattParser(which_parser):
-        print("Would use Pratt Parser")
+        all_nodes = pratt_parse_program(program_file)
     elif isNewParser(which_parser):
         all_nodes = new_parse_program(program_file)
     else:

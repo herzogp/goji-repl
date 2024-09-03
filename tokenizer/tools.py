@@ -8,9 +8,10 @@ def lines_to_process(filepath, should_join = True):
         return all_lines
     fo = open(filepath, "r", encoding="utf-8")
     for x in fo.readlines():
-        line = x.rstrip().lstrip()
+        line = x.rstrip()
+        cmp_line = line.lstrip()
         if should_join:
-            if not line.startswith("//"):
+            if not cmp_line.startswith("//"):
                 all_lines.append(line)
         else:
             all_lines.append(line)

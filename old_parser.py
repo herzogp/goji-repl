@@ -166,15 +166,15 @@ class Parser:
             print(INDENT)
             lx = len(tokens)
             if lx > 1:
-                next_tk = tokens[1]
-                if next_tk.is_line_begin():
-                    if len(next_tk.value) > 0:
-                        self.line = int(next_tk.value)
-                    return self.parse_expr(tokens[2:])
-            return self.parse_expr(tokens[1:])
-        elif tk.is_line_begin():
-            self.line = int(tk.value)
-            return self.parse_expr(tokens[1:])
+                # next_tk = tokens[1]
+                # if next_tk.is_line_begin():
+                #     if len(next_tk.value) > 0:
+                #         self.line = int(next_tk.value)
+                #     return self.parse_expr(tokens[2:])
+                return self.parse_expr(tokens[1:])
+        # elif tk.is_line_begin():
+        #     self.line = int(tk.value)
+        #     return self.parse_expr(tokens[1:])
         else:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:
@@ -210,7 +210,7 @@ class Parser:
                             print("%s SUCCESS: RIGHT_NODE is: " % INDENT, right_node)
                             return node, more_tokens
                         else:
-                            print("%s FAILED: RIGHT_NoDE is not there..." % INDENT)
+                            print("%s FAILED RIGHT_NoDE is not there..." % INDENT)
                             return nil_node, tokens[1:]
                             # return None
                 self.push_node(maybe_node)
@@ -243,15 +243,15 @@ class Parser:
         elif tk.is_line_end():
             lx = len(tokens)
             if lx > 1:
-                next_tk = tokens[1]
-                if next_tk.is_line_begin():
-                    if len(next_tk.value) > 0:
-                        self.line = int(next_tk.value)
-                    return self.parse_node(tokens[2:])
-            return self.parse_node(tokens[1:])
-        elif tk.is_line_begin():
-            self.line = int(tk.value)
-            return self.parse_node(tokens[1:])
+                # next_tk = tokens[1]
+                # if next_tk.is_line_begin():
+                #     if len(next_tk.value) > 0:
+                #         self.line = int(next_tk.value)
+                # return self.parse_node(tokens[1:])
+                return self.parse_node(tokens[1:])
+        # elif tk.is_line_begin():
+        #     self.line = int(tk.value)
+        #     return self.parse_node(tokens[1:])
         else:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:

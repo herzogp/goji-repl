@@ -5,7 +5,7 @@ from enum import Enum
 from tokenizer.tools import lines_to_process
 
 class Token(Enum):
-    UNKNOWN = 0 # Unexpected lexical finding
+    INPUT_END = 0 # Unexpected lexical finding
 
     # List
     LIST_BEGIN = 1 # '('
@@ -25,8 +25,7 @@ class Token(Enum):
     SYMBOL = 6 
 
     # Source 
-    LINE_BEGIN = 7 # '<line number>'
-    LINE_END = 8 # ''
+    LINE_END = 7 # ''
 
 # ------------------------------------------------------------
 # TokenItem {
@@ -38,25 +37,42 @@ class TokenItem:
     def __init__(self, tk, ch=''):
         self.t = tk
         self.v = ch
+        self._lno  = 0
+        self._col  = 0
 
     def __str__(self):
         name = self.t.name
         val = self.v
-        msg = name
+        body = name
         if self.has_value():
-            msg = "%s(%s)" % (name, val)
-        return msg
+            body = "%s(%s)" % (name, val)
+        
+        if self._lno == 0:
+            return body
+        line_info = "[%d:%d]" % (self._lno, self._col)
+        return "%s%s" % (body, line_info)
+
+    def set_meta(self, line, col):
+        self._lno = line
+        self._col = col
+        return self
+
+    @property
+    def line(self):
+        return self._lno
+
+    @property
+    def col(self):
+        return self._col
 
     def has_value(self):
         return self.t == Token.TEXT \
             or self.t == Token.QTEXT \
             or self.t == Token.SYMBOL \
-            or self.t == Token.LINE_BEGIN \
             or self.t == Token.NUMERIC
 
-    def is_line_info(self):
-        return self.t == Token.LINE_BEGIN \
-            or self.t == Token.LINE_END
+    def is_line_end(self):
+        return self.t == Token.LINE_END
 
     def is_numeric(self):
         return self.t == Token.NUMERIC
@@ -76,11 +92,11 @@ class TokenItem:
     def is_list_end(self):
         return self.t == Token.LIST_END
 
-    def is_line_begin(self):
-        return self.t == Token.LINE_BEGIN
-
     def is_line_end(self):
         return self.t == Token.LINE_END
+
+    def is_input_end(self):
+        return self.t == Token.INPUT_END
 
     @property
     def value(self):
@@ -115,8 +131,10 @@ class ScanContext(Enum):
 class Tokenizer:
 
     def __init__(self):
-        self.tk_type = Token.UNKNOWN
+        self.tk_type = Token.INPUT_END
         self.text = ''
+        self._lno = 0
+        self._col = 0
         self.tokens = [] # TokenItem[]
         self.state = ScanContext.IN_NOTHING
         self.info = {}
@@ -127,10 +145,15 @@ class Tokenizer:
         self.hexdigits = "AaBbCcDdEeFf"
 
     def reset(self):
-        self.tk_type = Token.UNKNOWN
+        self.tk_type = Token.INPUT_END
         self.text = ''
+        self._lno = 0
+        self._col = 0
         self.state = ScanContext.IN_NOTHING
         self.info = {}
+    
+    def mark_end_of_input(self):
+        self.add_token(Token.INPUT_END)
 
     def isalpha(self, char):
         return char.isalpha()
@@ -145,7 +168,7 @@ class Tokenizer:
         return self.valid_symbols.find(char) >= 0
 
     def istoken(self):
-        return self.tk_type != Token.UNKNOWN
+        return self.tk_type != Token.INPUT_END
 
     def get_text(self):
         return self.text
@@ -155,6 +178,8 @@ class Tokenizer:
 
     def add_token(self, tk, s=''):
         new_tk = TokenItem(tk, s)
+        if tk != Token.INPUT_END:
+            new_tk.set_meta(self._lno, self._col)
         self.tokens.append(new_tk)
         self.reset()
 
@@ -268,9 +293,14 @@ class Tokenizer:
         self.emit_token()
         return False
 
-    def did_handle_char(self, char):
+    def set_meta(self, line, col):
+        self._lno = line
+        self._col = col
+
+    def did_handle_char(self, char, lno, col):
         state = self.state
         if state == ScanContext.IN_NOTHING:
+            self.set_meta(lno, col)
             return self.did_handle_undetermined(char)
         elif state == ScanContext.IN_DOUBLE_QUOTE:
             return self.did_handle_quoted(char, self.double_quote)
@@ -290,22 +320,25 @@ class Tokenizer:
 # End class Tokekenizer
 # ----------------------------------------------------------------------
 
+# tk: Tokenizer
 def tokenize_line(tk, lno, char_iter):    
 
-
-    tk.add_token(Token.LINE_BEGIN, str(lno))
+    # tk.add_token(Token.LINE_BEGIN, str(lno))
 
     # Iterate over the characters
+    col = 0
     for char in char_iter:
+        col = col + 1
         handled = False
         while not handled:
-            handled = tk.did_handle_char(char)
+            handled = tk.did_handle_char(char, lno, col)
 
     # Done with all chars being handled somehow
     # Drain the tokenizer
     if tk.istoken():
         tk.emit_token()
 
+    tk.set_meta(lno, col + 1)
     tk.add_token(Token.LINE_END)
     #return tk.get_tokens()
 
@@ -326,5 +359,7 @@ def tokenize_program(file_path):
     if lx == 1:
         suffix = ''
     print('Processed %d line%s from "%s"' % (lx, suffix, file_path))
+
+    tk.mark_end_of_input()
 
     return tk.get_tokens()

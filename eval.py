@@ -42,7 +42,6 @@ def eval_atom(environment, node):
 
        x = environment.get_item(env_name)
 
-       # TODO: Why return the ident here? 
        # Because it must be a define???? 
        if x == None:
             return sub_item
