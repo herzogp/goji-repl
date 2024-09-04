@@ -94,7 +94,9 @@ class Parser:
 
     def current_token(self):
         if not self.has_tokens:
+            print("current_token() -> None")
             return None
+        print("current_token() -> %s" % self._symtokens[self._pos])
         return self._symtokens[self._pos]
 
     def peek_prev_token(self):
@@ -120,9 +122,11 @@ class Parser:
         p.advance()
 
     def advance(self):
+        oldpos = self._pos
         idx = self._pos + 1
         if idx <= self._ntx:
             self.pos = idx
+        print("advance: %d to %d" % (oldpos, self.pos))
         return
 
 # ---------------------------------------------------------------------- 
@@ -233,7 +237,6 @@ def pratt_parse_program(file_path):
         print('%i <Pratt> tokens found in "%s"' % (tk_count, file_path))
     parseInfo = FileParser(file_path, tokens)
     parseInfo.show_symtokens()
-    print('hello')
     parsed_result = parseInfo.parse()
 
 
