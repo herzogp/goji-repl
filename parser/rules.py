@@ -74,16 +74,16 @@ class Rule:
         return self._htype == HandlerType.STATEMENT_DENOTED
 
 class NullRule(Rule):
-    def __init__(self, binding_power, node_type, handler, NULL_DENOTED):
-        super().__init__(binding_power, node_type)
+    def __init__(self, binding_power, node_type, handler):
+        super().__init__(binding_power, node_type, handler, HandlerType.NULL_DENOTED)
 
 class LeftRule(Rule):
-    def __init__(self, binding_power, node_type, handler, LEFT_DENOTED):
-        super().__init__(binding_power, node_type)
+    def __init__(self, binding_power, node_type, handler):
+        super().__init__(binding_power, node_type, handler, HandlerType.LEFT_DENOTED)
         
 class StatementRule(Rule):
-    def __init__(self, binding_power, node_type, handler, STATEMENT_DENOTED):
-        super().__init__(binding_power, node_type)
+    def __init__(self, binding_power, node_type, handler):
+        super().__init__(binding_power, node_type, handler, HandlerType.STATEMENT_DENOTED)
 
 # ----------------------------------------------------------------------
 # NodeType Handlers
@@ -92,38 +92,42 @@ class StatementRule(Rule):
 # left_handler  Parser -> ast.Expr -> bp BindingPower -> ast.Expr
 # statement_handler Parser -> ast.Stmt
 # ----------------------------------------------------------------------
+class RuleProvider:
+    def __init__(self):
+        self.null_rules = {}
+        self.left_rules = {}
+        self.statement_rules = {}
+        self.all_bps = {}
 
-null_rules = {}
-left_rules = {}
-statement_rules = {}
-all_bps = {}
-
-def register_rule(rule):
-    ntype = rule.node_type
-    if isinstance(rule, NullRule):
-        null_rules[ntype] = rule
-    elif isinstance(rule, LeftRule):
-        left_rules[ntype] = rule
-    elif isinstance(rule, StatementRule):
-        statement_rules[ntype] = rule
-    else:
-        print("Unknown rule type: ", rule)
-        return
-    all_bps[ntype] = rule.binding_power
-
-def null_rule_for_token_type(ntype):
-    return null_rules.get(ntype)
-
-def left_rule_for_token_type(ntype):
-    return left_rules.get(ntype)
-
-def statement_rule_for_token_type(ntype):
-    return statement_rules.get(ntype)
-
-def bp_for_token_type(ntype):
-    result = all_bps.get(ntype) 
-    if result == None:
-        result = -1
-    return result
-    return 
+    def register_rule(self, rule):
+        ntype = rule.node_type
+        if isinstance(rule, NullRule):
+            self.null_rules[ntype] = rule
+        elif isinstance(rule, LeftRule):
+            self.left_rules[ntype] = rule
+        elif isinstance(rule, StatementRule):
+            self.statement_rules[ntype] = rule
+        else:
+            print("Unknown rule type: ", rule)
+            return
+        self.all_bps[ntype] = rule.bp
+    
+    def null_rule_for_token_type(self, ntype):
+        return self.null_rules.get(ntype).handler
+    
+    def left_rule_for_token_type(self, ntype):
+        return self.left_rules.get(ntype).handler
+    
+    def statement_rule_for_token_type(self, ntype):
+        rule = self.statement_rules.get(ntype)
+        if rule == None:
+            print("No statement rule found for %s" % ntype)
+            return None
+        return rule.handler
+    
+    def bp_for_token_type(self, ntype):
+        result = self.all_bps.get(ntype) 
+        if result == None:
+            result = -1
+        return result
 

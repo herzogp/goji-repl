@@ -1,11 +1,17 @@
 from parser.rules import (
     BindingPower,
-    null_rule_for_token_type,
-    left_rule_for_token_type,
 )
 
 from parser.symbols import (
     SymbolType,
+)
+
+from ast.expressions import (
+    IntegerExpr,
+    FloatExpr,
+    BoolExpr,
+    StringExpr,
+    IdentifierExpr,
 )
 
 # Parser -> ast.Expr
@@ -32,7 +38,8 @@ def parse_primary_expr(p):
 # and advances the parser position
 def parse_binary_expr(p, left_expr, left_bp):
     operator = p.current_token()
-    operator_bp = bp_for_token_type(operator.symtype)
+    rp = p.rule_provider
+    operator_bp = rp.bp_for_token_type(operator.symtype)
     p.advance()
     right_expr = parse_expr(p, operator_bp) # PH - was left_bp
     return BinaryExpr(operator, left_expr, right_expr)
@@ -45,7 +52,8 @@ def parse_expr(p, overall_bp):
 
     # Check if there is a NullDenoted handler for
     # this type of token
-    null_rule = null_rule_for_token_type(symtok.symtype)
+    rp = p.rule_provider
+    null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule == None:
         print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
         return None
@@ -55,14 +63,14 @@ def parse_expr(p, overall_bp):
     left_node = null_rule(p)
 
     symtok = p.current_token()
-    next_bp = bp_for_token_type(symtok.symtype)
+    next_bp = rp.bp_for_token_type(symtok.symtype)
 
     # Fast-forward to the right, within this expr to find the
     # operator with the highest binding power seen so far
     # for something like "10 + 4" this will fast forward to the 4, 
     # but 
-    while next_bp > overall_bp:
-        left_rule = left_rule_for_token_type(symtok.symtype)
+    while next_bp.value > overall_bp.value:
+        left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule == None:
             print("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
             return None
@@ -75,7 +83,7 @@ def parse_expr(p, overall_bp):
         # Since the parser has been advanced,
         # get the new current_token
         symtok = p.current_token()
-        next_bp = bp_for_token_type(symtok.symtype)
+        next_bp = rp.bp_for_token_type(symtok.symtype)
 
     return left_node
 

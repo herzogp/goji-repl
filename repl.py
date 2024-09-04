@@ -1,4 +1,4 @@
-import argparse 
+import argparse
 
 from program import (
     run_program,

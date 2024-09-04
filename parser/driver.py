@@ -4,7 +4,10 @@ from tokenizer.tokens import (
 
 from parser.rules import (
     BindingPower,
-    register_rule,
+    RuleProvider,
+    NullRule,
+    LeftRule,
+    StatementRule,
 )
 
 from parser.symbols import (
@@ -28,6 +31,7 @@ class FileParser:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
+        self._rule_provider = create_rule_provider()
 
     def show_symtokens(self):
         print("")
@@ -77,17 +81,22 @@ class FileParser:
     def parse(self):
         # parsed_result = parseInfo.parse_expr(self.tokens)
         body = []
-        p = Parser(self._symtokens)
+        p = Parser(self._symtokens, self._rule_provider)
         while p.has_tokens():
             st = parse_statement(p)
             body.append(st)
         return body
 
 class Parser:
-    def __init__(self, symtokens):
+    def __init__(self, symtokens, rule_provider):
         self._symtokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
+        self._rule_provider = rule_provider
+
+    @property
+    def rule_provider(self):
+        return self._rule_provider
 
     def has_tokens(self):
         return self._pos < self._ntx
@@ -206,7 +215,9 @@ class Parser:
 # 	[ ] NUM_TOKENS
 
 
-def setup_rules():
+def create_rule_provider():
+
+    rule_provider = RuleProvider()
 
     # Literals & Symbols
     all_literals = [
@@ -218,17 +229,19 @@ def setup_rules():
     ]
     bp = BindingPower.PRIMARY
     for x in all_literals:
-        register_rule(NullRule(bp, x, parse_primary_expr))
+        rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
 
     # Math Operations
-    register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
-    register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
+    rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
+    rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
 
     # Assignment
-    register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
+    rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
 
     # Grouping and Scope
-    register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
+    rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
+
+    return rule_provider
 
 def pratt_parse_program(file_path):
     tokens = tokenize_program(file_path)
