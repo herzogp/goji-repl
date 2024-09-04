@@ -19,6 +19,10 @@ from parser.expressions import (
     parse_grouping_expr,
 )
 
+from parser.statements import (
+    parse_statement,
+)
+
 class FileParser:
     def __init__(self, filename, tokens):
         self._filename = filename
@@ -72,12 +76,16 @@ class FileParser:
     #----------------------------------------------------------------------
     def parse(self):
         # parsed_result = parseInfo.parse_expr(self.tokens)
+        body = []
         p = Parser(self._symtokens)
-        return []
+        while p.has_tokens():
+            st = parse_statement(p)
+            body.append(st)
+        return body
 
 class Parser:
     def __init__(self, symtokens):
-        self._tokens = symtokens
+        self._symtokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
 
@@ -107,8 +115,8 @@ class Parser:
         symtok = self.current_token()
         if symtok.symtype != type_to_skip:
             if err_msg == '':
-                err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtoken.name)
-            raise err_msg
+                err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtok)
+            raise Exception(err_msg)
         p.advance()
 
     def advance(self):
