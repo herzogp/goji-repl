@@ -12,5 +12,9 @@ class ExpressionStmt:
         return str(self._expression)
 
     @property
+    def expression(self):
+        return self._expression
+
+    @property
     def line(self):
         return self._expression.line

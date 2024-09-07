@@ -57,23 +57,45 @@ class IdentifierExpr(SourceExpr):
         super().__init__(sym)
 
     def __str__(self):
-        return "Identifier(%s)" % self.value
+        return "Identifier(%s)" % super().value
 
 
 class AssignmentExpr(SourceExpr):
-    def __init__(self, ident, value):
+    def __init__(self, ident, rhs):
         super().__init__(ident)
-        self._value = value
+        self._rhs = rhs
 
     def __str__(self):
-        return "AssignmentExpr(IDENT: %s, Value: %s)" % (self.symbol, self._value)
+        return "AssignmentExpr(IDENT: %s, Value: %s)" % (self.symbol, self._rhs)
+
+    @property
+    def rhs(self):
+        return self._rhs
+
+    @property
+    def ident(self):
+        return super().symbol
+
 
 class BinaryExpr(SourceExpr):
-    def __init__(self, op, left, right):
+    def __init__(self, op, lhs, rhs):
         super().__init__(op)
         # self._op = op
-        self._left = left
-        self._right = right
+        self._lhs = lhs
+        self._rhs = rhs
 
     def __str__(self):
-        return "BinaryExpr(OP:'%s', Left: %s, Right: %s)" % (self.symbol.symvalue, self._left, self._right)
+        return "BinaryExpr(OP:'%s', Left: %s, Right: %s)" % (self.symbol.symvalue, self._lhs, self._rhs)
+        
+
+    @property
+    def operator(self):
+        return super().symbol
+
+    @property
+    def lhs(self):
+        return self._lhs
+
+    @property
+    def rhs(self):
+        return self._rhs
