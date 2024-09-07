@@ -99,7 +99,7 @@ def run_program(program_file, which_parser):
             if isPrattParser(which_parser):
                 stmt = n
                 print("[%2d] %s" % (stmt.line, stmt))
-                eval_stmt(program_env, stmt)
+                # eval_stmt(program_env, stmt)
             else:
                 print("\n[%2.2i] %s" % (idx, str(n)))
                 node_val = eval_node(program_env, n)
