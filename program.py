@@ -102,8 +102,10 @@ def run_program(program_file, which_parser):
         for idx, n in enumerate(all_nodes):
             if isPrattParser(which_parser):
                 stmt = n
-                # print("[%2d] %s" % (stmt.line, stmt))
-                eval_stmt(program_env, stmt)
+                print(stmt)
+                result = eval_stmt(program_env, stmt)
+                print("result: %s" % str(result))
+                print("")
             else:
                 print("\n[%2.2i] %s" % (idx, str(n)))
                 node_val = eval_node(program_env, n)

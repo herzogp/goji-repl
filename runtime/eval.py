@@ -2,6 +2,10 @@ from ast.expressions import (
     AssignmentExpr,
     IdentifierExpr,
     BinaryExpr,
+    IntegerExpr,
+    FloatExpr,
+    BoolExpr,
+    StringExpr,
 )
 
 from parser.symbols import SymbolType
@@ -12,16 +16,37 @@ from ast.statements import (
 
 def eval_expr(env, expr):
     if isinstance(expr, AssignmentExpr):
-        print("Assign %s <= '%s'" % (expr.ident.value, expr.rhs))
+        result = eval_expr(env, expr.rhs)
+        print("Assign %s <= %s" % (expr.ident.value, str(result)))
+        return result
+    elif isinstance(expr, IntegerExpr):
+        # print("Integer %d" % expr.value)
+        return expr.value
+    elif isinstance(expr, FloatExpr):
+        # print("Float %g" % expr.value)
+        return expr.value
+    elif isinstance(expr, StringExpr):
+        # print("String %s" % expr.value)
+        return expr.value
+    elif isinstance(expr, BoolExpr):
+        # print("Bool %b" % expr.value)
+        return expr.value
     elif isinstance(expr, IdentifierExpr):
         print("Dereference %s" % expr.value)
+        return 3297  #expr.value
     elif isinstance(expr, BinaryExpr):
         operator = expr.operator
         opsym = operator.symtype
+        lhs = eval_expr(env, expr.lhs)
+        rhs = eval_expr(env, expr.rhs)
         if opsym == SymbolType.OP_ADD:
-            print("Add values")
-        elif expr.opsym == SymbolType.OP_MULTIPLY:
-            print("Multiply values")
+            print("Add values: %d + %d" % (lhs, rhs))
+            result = lhs + rhs
+            return result
+        elif opsym == SymbolType.OP_MULTIPLY:
+            print("Multiply values: %d * %d" % (lhs, rhs))
+            result = lhs * rhs
+            return result
     else:
         print("Another expr named: %s" % type(expr))
     return None
