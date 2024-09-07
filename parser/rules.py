@@ -1,40 +1,21 @@
 
 # Parsing rules
-# 
-# var bp_lu = bp_lookup{}
-# var nud_lu = nud_lookup{}
-# var led_lu = led_lookup{}
-# var stmt_lu =stmt_lookup{}
-# 
-# 
-# func led (kind lexer.TokenKind, bp binding_power, led_fn led_handler) {
-# 	bp_lu[kind] = bp
-# 	led_lu[kind] = led_fn
-# }
-# 
-# func nud (kind lexer.TokenKind, bp binding_power, nud_fn nud_handler) {
-# 	bp_lu[kind] = primary
-# 	nud_lu[kind] = nud_fn
-# }
-# 
-# func stmt (kind lexer.TokenKind, stmt_fn stmt_handler) {
-# 	bp_lu[kind] = defalt_bp
-# 	stmt_lu[kind] = stmt_fn
-# }
 from enum import Enum
+
+from parser.symbols import SymbolType
 
 class BindingPower(Enum):
 	DEFAULT_BP = 0
-	COMMA = 1
-	ASSIGNMENT = 2
-	LOGICAL = 3
-	RELATIONAL = 4
-	ADDITIVE = 5
-	MULTIPLICATIVE = 6
-	UNARY = 7
-	CALL = 8
-	MEMBER = 9
-	PRIMARY = 10
+	COMMA = 10
+	ASSIGNMENT = 20
+	LOGICAL = 30
+	RELATIONAL = 40
+	ADDITIVE = 50
+	MULTIPLICATIVE = 60
+	UNARY = 70
+	CALL = 80
+	MEMBER = 90
+	PRIMARY = 100
 
 class HandlerType(Enum):
     NULL_DENOTED = 0
@@ -42,18 +23,28 @@ class HandlerType(Enum):
     STATEMENT_DENOTED = 2
 
 class Rule:
-    def __init__(self, binding_power, node_type, handler, handler_type):
+    def __init__(self, binding_power, symbol_type, handler, handler_type):
         self._bp = binding_power
-        self._ntype = node_type
+        self._ntype = symbol_type
         self._handler = handler
         self._htype = handler_type
+
+    def __str__(self):
+        rule_type = "Unknown"
+        if self._htype == HandlerType.NULL_DENOTED:
+            rule_type = "Null"
+        elif self._htype == HandlerType.LEFT_DENOTED:
+            rule_type = "Left"
+        elif self._htype == HandlerType.STATEMENT_DENOTED:
+            rule_type = "Stmt"
+        return "%sRule(%s, %d)" % (rule_type, self._ntype, self._bp.value)
 
     @property
     def bp(self):
         return self._bp
 
     @property
-    def node_type(self):
+    def symbol_type(self):
         return self._ntype
 
     @property
@@ -74,16 +65,16 @@ class Rule:
         return self._htype == HandlerType.STATEMENT_DENOTED
 
 class NullRule(Rule):
-    def __init__(self, binding_power, node_type, handler):
-        super().__init__(binding_power, node_type, handler, HandlerType.NULL_DENOTED)
+    def __init__(self, binding_power, symbol_type, handler):
+        super().__init__(binding_power, symbol_type, handler, HandlerType.NULL_DENOTED)
 
 class LeftRule(Rule):
-    def __init__(self, binding_power, node_type, handler):
-        super().__init__(binding_power, node_type, handler, HandlerType.LEFT_DENOTED)
+    def __init__(self, binding_power, symbol_type, handler):
+        super().__init__(binding_power, symbol_type, handler, HandlerType.LEFT_DENOTED)
         
 class StatementRule(Rule):
-    def __init__(self, binding_power, node_type, handler):
-        super().__init__(binding_power, node_type, handler, HandlerType.STATEMENT_DENOTED)
+    def __init__(self, binding_power, symbol_type, handler):
+        super().__init__(binding_power, symbol_type, handler, HandlerType.STATEMENT_DENOTED)
 
 # ----------------------------------------------------------------------
 # NodeType Handlers
@@ -96,38 +87,54 @@ class RuleProvider:
     def __init__(self):
         self.null_rules = {}
         self.left_rules = {}
-        self.statement_rules = {}
+        self.stmt_rules = {}
         self.all_bps = {}
 
     def register_rule(self, rule):
-        ntype = rule.node_type
+        ntype = rule.symbol_type
         if isinstance(rule, NullRule):
             self.null_rules[ntype] = rule
         elif isinstance(rule, LeftRule):
             self.left_rules[ntype] = rule
         elif isinstance(rule, StatementRule):
-            self.statement_rules[ntype] = rule
+            self.stmt_rules[ntype] = rule
         else:
             print("Unknown rule type: ", rule)
             return
         self.all_bps[ntype] = rule.bp
-    
+   
+    def show_all_rules(self):
+        for nt, r in self.null_rules.items():
+            print("NULL: %s => %s" % (nt, r.bp))
+
+        for nt, r in self.left_rules.items():
+            print("LEFT: %s => %s" % (nt, r.bp))
+
+        for nt, r in self.stmt_rules.items():
+            print("STMT: %s => %s" % (nt, r.bp))
+
+        print('')
+
     def null_rule_for_token_type(self, ntype):
-        return self.null_rules.get(ntype).handler
+        val = self.null_rules.get(ntype)
+        #print("Using NullRule => %s" % val)
+        if val is None:
+            return None
+        return val.handler
     
     def left_rule_for_token_type(self, ntype):
-        return self.left_rules.get(ntype).handler
+        val = self.left_rules.get(ntype)
+        #print("Using LeftRule => %s" % val)
+        if val is None:
+            return None
+        return val.handler
     
     def statement_rule_for_token_type(self, ntype):
-        rule = self.statement_rules.get(ntype)
+        rule = self.stmt_rules.get(ntype)
         if rule == None:
-            print("No statement rule found for %s" % ntype)
             return None
         return rule.handler
     
     def bp_for_token_type(self, ntype):
         result = self.all_bps.get(ntype) 
-        if result == None:
-            result = -1
         return result
-

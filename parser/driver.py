@@ -16,6 +16,7 @@ from parser.symbols import (
 )
 
 from parser.expressions import (
+    parse_expr,
     parse_primary_expr,
     parse_binary_expr,
     parse_assignment_expr,
@@ -81,6 +82,7 @@ class FileParser:
     def parse(self):
         # parsed_result = parseInfo.parse_expr(self.tokens)
         body = []
+        self._rule_provider.show_all_rules()
         p = Parser(self._symtokens, self._rule_provider)
         while p.has_tokens():
             st = parse_statement(p)
@@ -93,20 +95,24 @@ class Parser:
         self._pos = 0
         self._ntx = len(symtokens)
         self._rule_provider = rule_provider
+        self._eof = False
 
     @property
     def rule_provider(self):
         return self._rule_provider
 
     def has_tokens(self):
+        if self._eof:
+            return False
         return self._pos < self._ntx
 
     def current_token(self):
         if not self.has_tokens:
             print("current_token() -> None")
             return None
-        print("current_token() -> %s" % self._symtokens[self._pos])
-        return self._symtokens[self._pos]
+        symtok = self._symtokens[self._pos]
+        # print("pos: %d  current_token() -> %s" % (self._pos, symtok))
+        return symtok
 
     def peek_prev_token(self):
         idx = self._pos - 1
@@ -128,14 +134,22 @@ class Parser:
             if err_msg == '':
                 err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtok)
             raise Exception(err_msg)
-        p.advance()
+        print("skipping: %s" % symtok)
+        print("")
+        self.advance()
 
     def advance(self):
-        oldpos = self._pos
         idx = self._pos + 1
         if idx <= self._ntx:
-            self.pos = idx
-        print("advance: %d to %d" % (oldpos, self.pos))
+            self._pos = idx
+            symtok = self._symtokens[self._pos]
+            if symtok.symtype == SymbolType.INPUT_END:
+                self._eof = True
+            if self._eof:
+                print("reached eof")
+                print("")
+            else:
+                print("advanced to: %s" % symtok)
         return
 
 # ---------------------------------------------------------------------- 
@@ -148,7 +162,7 @@ class Parser:
 # 	[x] IDENTIFIER
 # 
 # Grouping & Scope
-# 	[ ] EOF
+# 	[x] EOF
 # 	[x] OPEN_BRACKET
 # 	[x] CLOSE_BRACKET
 # 	[x] OPEN_CURLY
@@ -210,9 +224,6 @@ class Parser:
 # 	[ ] EXPORT
 # 	[ ] TYPEOF
 # 	[ ] IN
-# 
-# Misc
-# 	[ ] NUM_TOKENS
 
 
 def create_rule_provider():
@@ -251,6 +262,4 @@ def pratt_parse_program(file_path):
     parseInfo = FileParser(file_path, tokens)
     parseInfo.show_symtokens()
     parsed_result = parseInfo.parse()
-
-
-
+    return parsed_result

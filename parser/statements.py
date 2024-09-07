@@ -7,6 +7,10 @@ from parser.expressions import (
     parse_expr,
 )
 
+from ast.statements import (
+    ExpressionStmt,
+)
+
 from parser.symbols import SymbolType
 
 # Parser -> ast.Stmt
@@ -18,5 +22,7 @@ def parse_statement(p):
         return statement_rule(p)
 
     expression = parse_expr(p, BindingPower.DEFAULT_BP)
+    # if expression == None:
+    #     return None
     p.skip_one(SymbolType.LINE_END)    
-    return ast.ExpressionStatement(expression)
+    return ExpressionStmt(expression)

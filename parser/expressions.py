@@ -12,6 +12,8 @@ from ast.expressions import (
     BoolExpr,
     StringExpr,
     IdentifierExpr,
+    AssignmentExpr,
+    BinaryExpr,
 )
 
 # Parser -> ast.Expr
@@ -20,15 +22,15 @@ def parse_primary_expr(p):
     symtok = p.current_token()
     expr = None
     if symtok.symtype == SymbolType.LITERAL_INTEGER:
-        expr = IntegerExpr(symtok.symvalue)
+        expr = IntegerExpr(symtok)
     elif symtok.symtype == SymbolType.LITERAL_FLOAT:
-        expr = FloatExpr(symtok.symvalue)
+        expr = FloatExpr(symtok)
     elif symtok.symtype == SymbolType.LITERAL_BOOL:
-        expr = BoolExpr(symtok.symvalue)
+        expr = BoolExpr(symtok)
     elif symtok.symtype == SymbolType.LITERAL_STRING:
-        expr = StringExpr(symtok.symvalue)
+        expr = StringExpr(symtok)
     elif symtok.symtype == SymbolType.IDENTIFIER:
-        expr = IdentifierExpr(symtok.symvalue)
+        expr = IdentifierExpr(symtok)
     else:
         expr = None
     p.advance()
@@ -42,6 +44,9 @@ def parse_binary_expr(p, left_expr, left_bp):
     operator_bp = rp.bp_for_token_type(operator.symtype)
     p.advance()
     right_expr = parse_expr(p, operator_bp) # PH - was left_bp
+    if right_expr is None:
+        print("Unable to parse_expr() to deliver right_expr")
+        return None
     return BinaryExpr(operator, left_expr, right_expr)
 
 # Parser -> BindingPower -> ast.Expr
@@ -60,6 +65,7 @@ def parse_expr(p, overall_bp):
 
     # Use the null_rule to parse this as the left node
     # (which also will advance the parser pos)
+    oldtok = p.current_token()
     left_node = null_rule(p)
 
     symtok = p.current_token()
@@ -69,11 +75,12 @@ def parse_expr(p, overall_bp):
     # operator with the highest binding power seen so far
     # for something like "10 + 4" this will fast forward to the 4, 
     # but 
-    while next_bp.value > overall_bp.value:
+    while next_bp != None and (next_bp.value > overall_bp.value):
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule == None:
             print("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
             return None
+
         # Use the left_rule to parse this as the 
         # new left node (which incorporates the previous left node)
         # (which also will advance the parser pos)
@@ -89,12 +96,9 @@ def parse_expr(p, overall_bp):
 
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 def parse_assignment_expr(p, left_expr, bp):
-    # Why do we advance immediately?
-    # Is it to 'ignore' the 'Let' keyword?
     p.advance()
-
     rhs = parse_expr(p, bp)
-    expr_node = AssignmentExpr(left, rhs)
+    expr_node = AssignmentExpr(left_expr, rhs)
     return expr_node
 
 # Parser -> ast.Expr

@@ -31,6 +31,10 @@ class SymbolType(Enum):
     LINE_END        = 1002
     INPUT_END       = 1003
 
+# _typ : SymbolType
+# _val : native repr
+# _lno : source line number
+# _col : source column number
 class SymToken:
     def __init__(self, token_item):
         token_val = token_item.value
@@ -119,12 +123,16 @@ class SymToken:
     def symvalue(self):
         return self._val
 
+    @property
+    def line(self):
+        return self._lno
+
+    @property
+    def col(self):
+        return self._col
+
     def is_meta_info():
         return self._typ == SymbolType.LINE_INFO
-        # LINE_END is used by the parse rules
-        # so is not considered 'meta_info'
-        # elif self._typ == SymbolType.LINE_END:
-        #     is_meta = True
 
 def symbolized(tokens):
     sym_tokens = []

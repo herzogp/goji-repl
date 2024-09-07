@@ -9,7 +9,7 @@ from env import (
     EnvTable,
 )
 
-from eval import (
+from old_eval import (
     eval_node,
 )
 
@@ -96,10 +96,14 @@ def run_program(program_file, which_parser):
     else:
         print("%d nodes will be evaluated" % len(all_nodes))
         for idx, n in enumerate(all_nodes):
-            print("\n[%2.2i] %s" % (idx, str(n)))
-            node_val = eval_node(program_env, n)
-            print("=> %s" % str(node_val))
-
+            if isPrattParser(which_parser):
+                stmt = n
+                print("[%2d] %s" % (stmt.line, stmt))
+                eval_stmt(program_env, stmt)
+            else:
+                print("\n[%2.2i] %s" % (idx, str(n)))
+                node_val = eval_node(program_env, n)
+                print("=> %s" % str(node_val))
  
     # show ending environment
     print("\nGoji Ending Environment:")
