@@ -112,6 +112,9 @@ class TokenItem:
         else:
             return False
 
+def tokenitem_for_numeric(val):
+    return TokenItem(Token.NUMERIC, str(val))
+
 class ScanContext(Enum):
     IN_NOTHING = 0
     IN_SINGLE_QUOTE = 1

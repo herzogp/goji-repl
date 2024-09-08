@@ -1,5 +1,9 @@
 from enum import(Enum)
 
+from tokenizer.tokens import (
+    tokenitem_for_numeric,
+)
+
 class SymbolType(Enum):
 
     # Literals
@@ -30,6 +34,12 @@ class SymbolType(Enum):
     # Meta Info
     LINE_END        = 1002
     INPUT_END       = 1003
+
+    NIL             = 2000
+
+def symtoken_for_numeric(val):
+    token_item = tokenitem_for_numeric(val)
+    return SymToken(token_item)
 
 # _typ : SymbolType
 # _val : native repr
@@ -64,6 +74,14 @@ class SymToken:
             else:
                 self._typ = SymbolType.LITERAL_INTEGER # (or FLOAT)
                 self._val = int(token_val)
+
+        elif token_item.is_list_begin():
+            self._typ = SymbolType.LEFT_PAREN
+            self._val = '('
+
+        elif token_item.is_list_end():
+            self._typ = SymbolType.RIGHT_PAREN
+            self._val = ')'
 
         elif token_item.is_symbol():
             self._val = token_val

@@ -8,7 +8,11 @@ from ast.expressions import (
     StringExpr,
 )
 
-from parser.symbols import SymbolType
+from parser.symbols import (
+    SymbolType,
+    SymToken,
+    symtoken_for_numeric,
+)
 
 from ast.statements import (
     ExpressionStmt,
@@ -17,36 +21,43 @@ from ast.statements import (
 def eval_expr(env, expr):
     if isinstance(expr, AssignmentExpr):
         result = eval_expr(env, expr.rhs)
-        print("Assign %s <= %s" % (expr.ident.value, str(result)))
+        print("Assign %s <= %s" % (expr.ident, str(result)))
         return result
     elif isinstance(expr, IntegerExpr):
-        # print("Integer %d" % expr.value)
-        return expr.value
+        return expr
     elif isinstance(expr, FloatExpr):
-        # print("Float %g" % expr.value)
-        return expr.value
+        return expr
     elif isinstance(expr, StringExpr):
-        # print("String %s" % expr.value)
-        return expr.value
+        return expr
     elif isinstance(expr, BoolExpr):
-        # print("Bool %b" % expr.value)
-        return expr.value
+        return expr
     elif isinstance(expr, IdentifierExpr):
-        print("Dereference %s" % expr.value)
-        return 3297  #expr.value
+        print("Dereference %s" % expr.ident)
+        sym = symtoken_for_numeric(3294)
+        return IntegerExpr(sym)
     elif isinstance(expr, BinaryExpr):
         operator = expr.operator
         opsym = operator.symtype
         lhs = eval_expr(env, expr.lhs)
         rhs = eval_expr(env, expr.rhs)
+        leftval = lhs.exprvalue
+        rightval = rhs.exprvalue
+        lefttype = lhs.exprtype
+        righttype = rhs.exprtype
         if opsym == SymbolType.OP_ADD:
-            print("Add values: %d + %d" % (lhs, rhs))
-            result = lhs + rhs
-            return result
+            print("Add values: %g + %g" % (float(leftval), float(rightval)))
+            result = leftval + rightval
+            if (lefttype == SymbolType.LITERAL_INTEGER) and (righttype == SymbolType.LITERAL_INTEGER):
+                return IntegerExpr(symtoken_for_numeric(result))
+            else:
+                return FloatExpr(symtoken_for_numeric(result))
         elif opsym == SymbolType.OP_MULTIPLY:
-            print("Multiply values: %d * %d" % (lhs, rhs))
-            result = lhs * rhs
-            return result
+            print("Multiply values: %g * %g" % (float(leftval), float(rightval)))
+            result = leftval * rightval
+            if (lefttype == SymbolType.LITERAL_INTEGER) and (righttype == SymbolType.LITERAL_INTEGER):
+                return IntegerExpr(symtoken_for_numeric(result))
+            else:
+                return FloatExpr(symtoken_for_numeric(result))
     else:
         print("Another expr named: %s" % type(expr))
     return None
@@ -57,7 +68,6 @@ def eval_other(env, other):
 
 
 def eval_stmt(env, stmt):
-    # print("Evaluating [%2d] %s" % (stmt.line, stmt))
     if isinstance(stmt, ExpressionStmt):
         return eval_expr(env, stmt.expression)
     else:

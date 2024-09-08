@@ -2,11 +2,12 @@ from ast.interfaces import Expr
 
 from parser.symbols import SymToken 
 
-class SourceExpr:
+class BaseExpr:
     def __init__(self, sym):
         self._sym = sym
+        # TODO:
         # if not isinstance(sym, SymToken):
-        #     raise Exception("Only SymTokens can be SourceExpr's")
+        #     raise Exception("Only SymTokens can be BaseExpr's")
 
     @property
     def symbol(self):
@@ -21,52 +22,60 @@ class SourceExpr:
         return self._left.col
         
     @property
-    def value(self):
+    def exprvalue(self):
         return self._sym.symvalue
 
-class IntegerExpr(SourceExpr):
+    @property
+    def exprtype(self):
+        return self._sym.symtype
+
+class IntegerExpr(BaseExpr):
     def __init__(self, sym):
         super().__init__(sym)
 
     def __str__(self):
-        return "IntegerLiteral(%d)" % self.value
+        return "IntegerLiteral(%d)" % self.exprvalue
 
-class FloatExpr(SourceExpr):
+class FloatExpr(BaseExpr):
     def __init__(self, sym):
         super().__init__(sym)
 
     def __str__(self):
-        return "FloatLiteral(%g)" % self.value
+        return "FloatLiteral(%g)" % self.exprvalue
 
-class BoolExpr(SourceExpr):
+class BoolExpr(BaseExpr):
     def __init__(self, sym):
         super().__init__(sym)
 
     def __str__(self):
-        return "BoolLiteral(%b)" % self.value
+        return "BoolLiteral(%b)" % self.exprvalue
 
-class StringExpr(SourceExpr):
+class StringExpr(BaseExpr):
     def __init__(self, sym):
         super().__init__(sym)
 
     def __str__(self):
-        return "StringLiteral('%s')" % self.value
+        return "StringLiteral('%s')" % self.exprvalue
 
-class IdentifierExpr(SourceExpr):
-    def __init__(self, sym):
-        super().__init__(sym)
+class IdentifierExpr:
+    def __init__(self, ident):
+        self._ident = ident
+
+    @property
+    def ident(self):
+        return self._ident
 
     def __str__(self):
-        return "Identifier(%s)" % super().value
+        return "Identifier(%s)" % self._ident
 
 
-class AssignmentExpr(SourceExpr):
+class AssignmentExpr:
     def __init__(self, ident, rhs):
-        super().__init__(ident)
+        self._ident = ident
         self._rhs = rhs
 
     def __str__(self):
-        return "AssignmentExpr(IDENT: %s, Value: %s)" % (self.symbol, self._rhs)
+        return "AssignmentExpr(IDENT: %s, Value: %s)" % (self._ident, self._rhs)
 
     @property
     def rhs(self):
@@ -74,23 +83,21 @@ class AssignmentExpr(SourceExpr):
 
     @property
     def ident(self):
-        return super().symbol
+        return self._ident
 
 
-class BinaryExpr(SourceExpr):
+class BinaryExpr:
     def __init__(self, op, lhs, rhs):
-        super().__init__(op)
-        # self._op = op
+        self._op = op
         self._lhs = lhs
         self._rhs = rhs
 
     def __str__(self):
-        return "BinaryExpr(OP:'%s', Left: %s, Right: %s)" % (self.symbol.symvalue, self._lhs, self._rhs)
-        
+        return "BinaryExpr(OP:'%s', Left: %s, Right: %s)" % (self._op.symvalue, self._lhs, self._rhs)
 
     @property
     def operator(self):
-        return super().symbol
+        return self._op
 
     @property
     def lhs(self):

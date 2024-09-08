@@ -22,7 +22,5 @@ def parse_statement(p):
         return statement_rule(p)
 
     expression = parse_expr(p, BindingPower.DEFAULT_BP)
-    # if expression == None:
-    #     return None
     p.skip_one(SymbolType.LINE_END)    
     return ExpressionStmt(expression)
