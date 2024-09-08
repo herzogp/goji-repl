@@ -20,6 +20,10 @@ class EnvItem:
 
     @property
     def value(self):
+        return self._expr
+
+    @property
+    def old_value(self):
         return self._expr.exprvalue
 
     def isstring(self):
@@ -57,7 +61,7 @@ class EnvItem:
         # elif self.islist():
         #     return str(self.value)
         else:
-            return str(self.value)
+            return str(self.value.exprvalue)
 
     def __str__(self):
         if self.isnil():

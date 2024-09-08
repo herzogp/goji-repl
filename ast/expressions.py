@@ -70,19 +70,19 @@ class StringExpr(BaseExpr):
         return "StringLiteral('%s')" % self.exprvalue
 
 class IdentifierExpr:
-    def __init__(self, ident):
-        self._ident = ident
+    def __init__(self, name):
+        self._name = name
 
     @property
-    def ident(self):
-        return self._ident
+    def name(self):
+        return self._name
 
     def __str__(self):
-        return "Identifier(%s)" % self._ident
+        return "Identifier(%s)" % self._name
 
     @property
     def line(self):
-        return self._ident.line
+        return self._name.line
 
 class AssignmentExpr:
     def __init__(self, ident, rhs):

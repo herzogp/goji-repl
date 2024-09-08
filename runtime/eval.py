@@ -18,10 +18,17 @@ from ast.statements import (
     ExpressionStmt,
 )
 
+from runtime.env import (
+    EnvItem,
+)
+
 def eval_expr(env, expr):
     if isinstance(expr, AssignmentExpr):
         result = eval_expr(env, expr.rhs)
-        print("Assign %s <= %s" % (expr.ident, str(result)))
+        ident_expr = expr.ident
+        item_name = ident_expr.name.symvalue
+        item = EnvItem(item_name, result)
+        env.set_item(item)
         return result
     elif isinstance(expr, IntegerExpr):
         return expr
@@ -32,9 +39,8 @@ def eval_expr(env, expr):
     elif isinstance(expr, BoolExpr):
         return expr
     elif isinstance(expr, IdentifierExpr):
-        print("Dereference %s" % expr.ident)
-        sym = symtoken_for_numeric(3294)
-        return IntegerExpr(sym)
+        maybe_item = env.get_item(expr.name.symvalue)
+        return maybe_item.value
     elif isinstance(expr, BinaryExpr):
         operator = expr.operator
         opsym = operator.symtype
