@@ -115,6 +115,14 @@ class TokenItem:
 def tokenitem_for_numeric(val):
     return TokenItem(Token.NUMERIC, str(val))
 
+def tokenitem_for_text(val):
+    return TokenItem(Token.QTEXT, str(val))
+
+def tokenitem_for_identifier(val):
+    return TokenItem(Token.TEXT, str(val))
+
+nil_token_item = TokenItem(Token.SYMBOL)
+
 class ScanContext(Enum):
     IN_NOTHING = 0
     IN_SINGLE_QUOTE = 1

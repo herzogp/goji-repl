@@ -17,4 +17,6 @@ class ExpressionStmt:
 
     @property
     def line(self):
+        print("Looking for line attribute of an expression wrapped in a statement")
+        print(type(self._expression), vars(self._expression))
         return self._expression.line

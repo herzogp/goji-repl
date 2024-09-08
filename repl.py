@@ -1,5 +1,9 @@
 import argparse
 
+from old_program import (
+    old_run_program,
+)
+
 from program import (
     run_program,
 )
@@ -16,17 +20,15 @@ def exec_main():
     print(args)
     wants_new_parser = args.new_parser
     wants_pratt_parser = args.pratt_parser
+    which_parser = 'old'
+    if wants_new_parser:
+        which_parser = 'new'
   
     # wants_pratt_parser
-    which_parser = 'old'
     if wants_pratt_parser:
-        which_parser = 'pratt'
+        run_program(program_file)
     else:
-        if wants_new_parser:
-            which_parser = 'new'
-
-    run_program(program_file, which_parser)
-
+        old_run_program(program_file, which_parser)
 
 if __name__ == "__main__":
     exec_main()

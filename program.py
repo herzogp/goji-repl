@@ -4,7 +4,13 @@ from parser.driver import (
     pratt_parse_program,
 )
 
-from env import (
+from ast.expressions import (
+    StringExpr,
+    IntegerExpr,
+    BoolExpr,
+)
+
+from runtime.env import (
     EnvItem,
     EnvTable,
 )
@@ -13,104 +19,53 @@ from runtime.eval import (
     eval_stmt,
 )
 
-from old_eval import (
-    eval_node,
-)
-
-from old_parser import (
-    parse_program,
-    new_parse_program,
-)
-
-from atom import (
-    Atom,
-    Builtin,
-)
-
-from node import (
-    make_atom_node,
-    make_node_from_atom,
-)
-
-from tokenizer.tokens import (
-    Token,
-    TokenItem,
+from parser.symbols import (
+    symtoken_for_numeric,
+    symtoken_for_text,
+    symtoken_for_identifier,
 )
 
 class EngineVersion(Enum):
-    V0_1_0 = 3
+    V0_2_0 = 10
 
-def isOldParser(which_parser):
-    return which_parser == 'old'
-
-def isNewParser(which_parser):
-    return which_parser == 'new'
-
-def isPrattParser(which_parser):
-    return which_parser == 'pratt'
-
-def run_program(program_file, which_parser):
+def run_program(program_file):
     # Setup the root environment
     program_env = EnvTable()
 
     # Add the engine version
-    name_val = EngineVersion.V0_1_0.name
-    builtin = EnvItem('engineVersion-name', make_atom_node(Token.QTEXT, EngineVersion.V0_1_0.name))
+    name_val = EngineVersion.V0_2_0.name
+    # builtin = EnvItem('engineVersion-name', make_atom_node(Token.QTEXT, EngineVersion.V0_2_0.name))
+    builtin = EnvItem('engineVersion-name', StringExpr(symtoken_for_text(EngineVersion.V0_2_0.name)))
     program_env.set_item(builtin)
 
-    this_val = EngineVersion.V0_1_0.value
-    builtin = EnvItem('engineVersion-id', make_atom_node(Token.NUMERIC, str(EngineVersion.V0_1_0.value)))
+    this_val = EngineVersion.V0_2_0.value
+    builtin = EnvItem('engineVersion-id', IntegerExpr(symtoken_for_numeric(str(EngineVersion.V0_2_0.value))))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('seven', make_atom_node(Token.NUMERIC, str(7)))
+    builtin = EnvItem('seven_eleven', IntegerExpr(symtoken_for_numeric(str(711))))
     program_env.set_item(builtin)
 
-    temp_atom = Atom(TokenItem(Token.QTEXT, 'true')).asbool()
-    builtin = EnvItem('true', make_node_from_atom(temp_atom))
+    builtin = EnvItem('true', BoolExpr(symtoken_for_identifier('true')))
     program_env.set_item(builtin)
     
-    temp_atom = Atom(TokenItem(Token.QTEXT, 'false')).asbool()
-    builtin = EnvItem('false', make_node_from_atom(temp_atom))
-    program_env.set_item(builtin)
-
-    temp_atom = Atom(TokenItem(Token.QTEXT, '=')).asbuiltin()
-    builtin = EnvItem('=', make_node_from_atom(temp_atom))
-    program_env.set_item(builtin)
-
-    temp_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()
-    builtin = EnvItem('+', make_node_from_atom(temp_atom))
-    program_env.set_item(builtin)
-
-    temp_atom = Atom(TokenItem(Token.QTEXT, '*')).asbuiltin()
-    builtin = EnvItem('*', make_node_from_atom(temp_atom))
+    builtin = EnvItem('false', BoolExpr(symtoken_for_identifier('false')))
     program_env.set_item(builtin)
 
     # parse and show/eval AST
-    all_nodes = None
-    if isPrattParser(which_parser):
-        all_nodes = pratt_parse_program(program_file)
-    elif isNewParser(which_parser):
-        all_nodes = new_parse_program(program_file)
-    else:
-        all_nodes = parse_program(program_file)
+    all_statements = pratt_parse_program(program_file)
 
     # Time to evaluate
-    if all_nodes == None:
+    if all_statements == None:
         print("Nothing to evaluate")
     else:
-        print("%d nodes will be evaluated" % len(all_nodes))
-        for idx, n in enumerate(all_nodes):
-            if isPrattParser(which_parser):
-                stmt = n
-                print(stmt)
-                result = eval_stmt(program_env, stmt)
-                print("result: %s" % str(result))
-                print("")
-            else:
-                print("\n[%2.2i] %s" % (idx, str(n)))
-                node_val = eval_node(program_env, n)
-                print("=> %s" % str(node_val))
- 
+        print("%d statements will be evaluated" % len(all_statements))
+        for stmt in all_statements:
+            print("[%2d] %s" % (stmt.line, stmt))
+            result = eval_stmt(program_env, stmt) 
+            print("==> %s" % result)
+            print("")
+
     # show ending environment
     print("\nGoji Ending Environment:")
     program_env.show()
+

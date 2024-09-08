@@ -29,6 +29,18 @@ class BaseExpr:
     def exprtype(self):
         return self._sym.symtype
 
+    @property
+    def exprsym(self):
+        return self._sym
+
+
+class NilExpr(BaseExpr):
+    def __init__(self, sym):
+        super().__init__(sym)
+
+    def __str__(self):
+        return "NilLiteral"
+
 class IntegerExpr(BaseExpr):
     def __init__(self, sym):
         super().__init__(sym)
@@ -68,6 +80,9 @@ class IdentifierExpr:
     def __str__(self):
         return "Identifier(%s)" % self._ident
 
+    @property
+    def line(self):
+        return self._ident.line
 
 class AssignmentExpr:
     def __init__(self, ident, rhs):
@@ -84,6 +99,10 @@ class AssignmentExpr:
     @property
     def ident(self):
         return self._ident
+
+    @property
+    def line(self):
+        return self._ident.line
 
 
 class BinaryExpr:
@@ -106,3 +125,7 @@ class BinaryExpr:
     @property
     def rhs(self):
         return self._rhs
+
+    @property
+    def line(self):
+        return self._op.line
