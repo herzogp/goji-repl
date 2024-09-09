@@ -152,9 +152,6 @@ class SymToken:
     def col(self):
         return self._col
 
-    def is_meta_info():
-        return self._typ == SymbolType.LINE_INFO
-
     def isinteger(self):
         return self._typ == SymbolType.LITERAL_INTEGER
 

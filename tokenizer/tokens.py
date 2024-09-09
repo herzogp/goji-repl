@@ -71,9 +71,6 @@ class TokenItem:
             or self.t == Token.SYMBOL \
             or self.t == Token.NUMERIC
 
-    def is_line_end(self):
-        return self.t == Token.LINE_END
-
     def is_numeric(self):
         return self.t == Token.NUMERIC
     

@@ -13,4 +13,4 @@ class Stmt(ABC):
 class Expr(ABC):
     @abstractmethod
     def expr(self):
-        pass
+        return self
