@@ -1,5 +1,8 @@
+from typing import Union
+
 from tokenizer.tokens import (
     tokenize_program,
+    TokenItem,
 )
 
 from parser.rules import (
@@ -12,11 +15,11 @@ from parser.rules import (
 
 from parser.symbols import (
     SymbolType,
+    SymToken,
     symbolized,
 )
 
 from parser.expressions import (
-    parse_expr,
     parse_primary_expr,
     parse_binary_expr,
     parse_assignment_expr,
@@ -27,14 +30,16 @@ from parser.statements import (
     parse_statement,
 )
 
+from ast.interfaces import Stmt
+
 class FileParser:
-    def __init__(self, filename, tokens):
+    def __init__(self, filename: str, tokens: list[TokenItem]) -> None:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
         self._rule_provider = create_rule_provider()
 
-    def show_symtokens(self):
+    def show_symtokens(self) -> None:
         print("")
         idx = 0
         for symtok in self._symtokens:
@@ -43,22 +48,22 @@ class FileParser:
         print("")
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         return self._filename
 
     @filename.setter
-    def filename(self, value):
+    def filename(self, value: str) -> None:
         self._filename = value
 
     @property
-    def line(self):
+    def line(self) -> int:
         return self._line
 
     @line.setter
-    def line(self, value):
+    def line(self, value: int) -> None:
         self._line = value
 
-    def has_line_numbers(self):
+    def has_line_numbers(self) -> bool:
         return self._line > 0
 
     #----------------------------------------------------------------------
@@ -79,10 +84,9 @@ class FileParser:
     # 4. return st.BlockStatement(body)
     # p.parse_stmt()
     #----------------------------------------------------------------------
-    def parse(self):
+    def parse(self) -> list[Stmt]:
         # parsed_result = parseInfo.parse_expr(self.tokens)
         body = []
-        self._rule_provider.show_all_rules()
         p = Parser(self._symtokens, self._rule_provider)
         while p.has_tokens():
             st = parse_statement(p)
@@ -90,66 +94,58 @@ class FileParser:
         return body
 
 class Parser:
-    def __init__(self, symtokens, rule_provider):
+    def __init__(self, symtokens: list[SymToken], rule_provider: RuleProvider) -> None:
         self._symtokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
         self._rule_provider = rule_provider
-        self._eof = False
 
     @property
-    def rule_provider(self):
+    def rule_provider(self) -> RuleProvider:
         return self._rule_provider
 
-    def has_tokens(self):
-        if self._eof:
-            return False
+    def has_tokens(self) -> bool:
         return self._pos < self._ntx
 
-    def current_token(self):
-        if not self.has_tokens:
+    def current_token(self) -> Union[SymToken, None]:
+        if not self.has_tokens():
             print("current_token() -> None")
             return None
-        symtok = self._symtokens[self._pos]
-        # print("pos: %d  current_token() -> %s" % (self._pos, symtok))
-        return symtok
+        print("current_token() -> %s" % self._symtokens[self._pos])
+        return self._symtokens[self._pos]
 
-    def peek_prev_token(self):
+    def peek_prev_token(self) -> Union[SymToken, None]:
         idx = self._pos - 1
         if idx >= 0:
             symtok = self._symtokens[idx]
             return symtok
         return None
 
-    def peek_next_token(self):
+    def peek_next_token(self) -> Union[SymToken, None]:
         idx = self._pos + 1
         if idx < self._ntx:
             symtok = self._symtokens[idx]
             return symtok
         return None
 
-    def skip_one(self, type_to_skip, err_msg=''):
+    def skip_one(self, type_to_skip, err_msg='') -> None:
         symtok = self.current_token()
+        if symtok is None:
+            if err_msg == '':
+                err_msg = "End of Tokens - unable to skip_one()"
+            raise Exception(err_msg)
         if symtok.symtype != type_to_skip:
             if err_msg == '':
                 err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtok)
             raise Exception(err_msg)
-        print("skipping: %s" % symtok)
-        print("")
         self.advance()
 
-    def advance(self):
+    def advance(self) -> None:
+        oldpos = self._pos
         idx = self._pos + 1
         if idx <= self._ntx:
-            self._pos = idx
-            symtok = self._symtokens[self._pos]
-            if symtok.symtype == SymbolType.INPUT_END:
-                self._eof = True
-            if self._eof:
-                print("reached eof")
-                print("")
-            else:
-                print("advanced to: %s" % symtok)
+            self.pos = idx
+        print("advance: %d to %d" % (oldpos, self.pos))
         return
 
 # ---------------------------------------------------------------------- 
@@ -162,7 +158,7 @@ class Parser:
 # 	[x] IDENTIFIER
 # 
 # Grouping & Scope
-# 	[x] EOF
+# 	[ ] EOF
 # 	[x] OPEN_BRACKET
 # 	[x] CLOSE_BRACKET
 # 	[x] OPEN_CURLY
@@ -224,9 +220,12 @@ class Parser:
 # 	[ ] EXPORT
 # 	[ ] TYPEOF
 # 	[ ] IN
+# 
+# Misc
+# 	[ ] NUM_TOKENS
 
 
-def create_rule_provider():
+def create_rule_provider() -> RuleProvider:
 
     rule_provider = RuleProvider()
 
@@ -254,7 +253,7 @@ def create_rule_provider():
 
     return rule_provider
 
-def pratt_parse_program(file_path):
+def pratt_parse_program(file_path: str) -> None:
     tokens = tokenize_program(file_path)
     tk_count = len(tokens)
     if tk_count > 0:
@@ -262,4 +261,3 @@ def pratt_parse_program(file_path):
     parseInfo = FileParser(file_path, tokens)
     parseInfo.show_symtokens()
     parsed_result = parseInfo.parse()
-    return parsed_result

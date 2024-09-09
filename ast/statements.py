@@ -1,20 +1,20 @@
-from ast.interfaces import Expr
+from ast.interfaces import Expr, Stmt
 
 class BlockStmt:
-    def __init__(self, stmts):
+    def __init__(self, stmts) -> None:
         self._stmts = stmts
 
-class ExpressionStmt:
-    def __init__(self, expression):
+class ExpressionStmt(Stmt):
+    def __init__(self, expression: Expr) -> None:
         self._expression = expression
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._expression)
 
     @property
-    def expression(self):
+    def expression(self) -> Expr:
         return self._expression
 
     @property
-    def line(self):
+    def line(self) -> int:
         return self._expression.line
