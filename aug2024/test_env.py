@@ -1,10 +1,8 @@
 import pytest
 
-# from p1 import *
-from old_env import (
+from aug2024.old_env import (
     EnvItem,
     EnvTable,
-    # ItemType,
     nil,
 )
 
@@ -12,7 +10,7 @@ from tokenizer.tokens import (
     Token, 
 )
 
-from node import (
+from aug2024.old_node import (
     make_atom_node,
 )
 

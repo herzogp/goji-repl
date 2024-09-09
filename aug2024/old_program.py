@@ -1,33 +1,25 @@
 from enum import Enum
 
-from parser.driver import (
-    pratt_parse_program,
-)
-
-from old_env import (
+from aug2024.old_env import (
     EnvItem,
     EnvTable,
 )
 
-from runtime.eval import (
-    eval_stmt,
-)
-
-from old_eval import (
+from aug2024.old_eval import (
     eval_node,
 )
 
-from old_parser import (
+from aug2024.old_parser import (
     parse_program,
     new_parse_program,
 )
 
-from atom import (
+from aug2024.old_atom import (
     Atom,
     Builtin,
 )
 
-from node import (
+from aug2024.old_node import (
     make_atom_node,
     make_node_from_atom,
 )

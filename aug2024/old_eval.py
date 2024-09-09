@@ -1,20 +1,20 @@
 import itertools
 from enum import Enum
 
-from old_env import (
+from aug2024.old_env import (
     EnvItem,
 )
 
-from atom import (
+from aug2024.old_atom import (
     Builtin,
 )
 
-from intrinsics import (
+from aug2024.old_intrinsics import (
     define_item,
     num_args_for_op,
 )
 
-from old_parser import (
+from aug2024.old_parser import (
     Atom,
 )
 

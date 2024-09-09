@@ -4,19 +4,19 @@ from tokenizer.tokens import (
     TokenItem,
 )
 
-from atom import (
+from aug2024.old_atom import (
     AtomType,
     Atom,
     Builtin,
 )
 
-from node import (
+from aug2024.old_node import (
     NodeType,
     Node,
     make_node_from_atom,
 )
 
-from old_env import (
+from aug2024.old_env import (
     nil_node
 )
 

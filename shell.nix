@@ -6,6 +6,7 @@ in pkgs.mkShell {
     (pkgs.python3.withPackages (python-pkgs: [
       python-pkgs.pytest
       python-pkgs.requests
+      python-pkgs.mypy
     ]))
   ];
 }
