@@ -31,6 +31,8 @@ class BaseExpr(Expr):
     def exprsym(self) -> SymToken:
         return self._sym
 
+    def expr(self) -> None:
+        return None
 
 class NilExpr(BaseExpr):
     def __init__(self, sym: SymToken) -> None:
@@ -82,6 +84,9 @@ class IdentifierExpr(Expr):
     def line(self) -> int:
         return self._sym.line
 
+    def expr(self) -> None:
+        return None
+
 class AssignmentExpr(Expr):
     def __init__(self, ident: SymToken, rhs: Expr):
         self._ident = ident
@@ -101,6 +106,9 @@ class AssignmentExpr(Expr):
     @property
     def line(self) -> int:
         return self._ident.line
+
+    def expr(self) -> None:
+        return None
 
 
 class BinaryExpr(Expr):
@@ -127,3 +135,6 @@ class BinaryExpr(Expr):
     @property
     def line(self) -> int:
         return self._op.line
+
+    def expr(self) -> None:
+        return None

@@ -1,3 +1,5 @@
+from typing import Union, cast
+
 from parser.rules import (
     BindingPower,
 )
@@ -16,21 +18,26 @@ from ast.expressions import (
     BinaryExpr,
 )
 
+from ast.interfaces import Expr
+
+from parser.driver import Parser
+
 # Parser -> ast.Expr
 # and advances the parser position
-def parse_primary_expr(p):
+def parse_primary_expr(p: Parser) -> Union[Expr, None]:
     symtok = p.current_token()
-    expr = None
+    if symtok is None:
+        return None
     if symtok.symtype == SymbolType.LITERAL_INTEGER:
-        expr = IntegerExpr(symtok)
+        expr = cast(Expr, IntegerExpr(symtok))
     elif symtok.symtype == SymbolType.LITERAL_FLOAT:
-        expr = FloatExpr(symtok)
+        expr = cast(Expr, FloatExpr(symtok))
     elif symtok.symtype == SymbolType.LITERAL_BOOL:
-        expr = BoolExpr(symtok)
+        expr = cast(Expr, BoolExpr(symtok))
     elif symtok.symtype == SymbolType.LITERAL_STRING:
         expr = StringExpr(symtok)
     elif symtok.symtype == SymbolType.IDENTIFIER:
-        expr = IdentifierExpr(symtok)
+        expr = cast(Expr, IdentifierExpr(symtok))
     else:
         expr = None
     p.advance()
@@ -38,8 +45,10 @@ def parse_primary_expr(p):
 
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 # and advances the parser position
-def parse_binary_expr(p, left_expr, left_bp):
+def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: Expr) -> Union[BinaryExpr, None]:
     operator = p.current_token()
+    if operator is None:
+        return None
     rp = p.rule_provider
     operator_bp = rp.bp_for_token_type(operator.symtype)
     p.advance()
@@ -51,24 +60,28 @@ def parse_binary_expr(p, left_expr, left_bp):
 
 # Parser -> BindingPower -> ast.Expr
 # bp is highest value bp seen so far
-def parse_expr(p, overall_bp):
+def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
     symtok = p.current_token()
+    if symtok is None:
+        return None
 
     # Check if there is a NullDenoted handler for
     # this type of token
     rp = p.rule_provider
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
-    if null_rule == None:
+    if null_rule is None:
         print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
         return None
 
     # Use the null_rule to parse this as the left node
     # (which also will advance the parser pos)
-    oldtok = p.current_token()
     left_node = null_rule(p)
 
     symtok = p.current_token()
+    if symtok is None:
+        return left_node
+
     next_bp = rp.bp_for_token_type(symtok.symtype)
 
     # Fast-forward to the right, within this expr to find the
@@ -77,34 +90,39 @@ def parse_expr(p, overall_bp):
     # but 
     while next_bp != None and (next_bp.value > overall_bp.value):
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
-        if left_rule == None:
+        if left_rule is None:
             print("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
             return None
 
         # Use the left_rule to parse this as the 
         # new left node (which incorporates the previous left node)
         # (which also will advance the parser pos)
-        new_left_node = left_rule(p, left_node, overall_bp)
-        left_node = new_left_node
+        left_node = left_rule(p, left_node, overall_bp)
 
         # Since the parser has been advanced,
         # get the new current_token
         symtok = p.current_token()
+        if symtok is None:
+            return left_node
         next_bp = rp.bp_for_token_type(symtok.symtype)
 
     return left_node
 
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
-def parse_assignment_expr(p, left_expr, bp):
+def parse_assignment_expr(p: Parser, left_expr: IdentifierExpr, bp: BindingPower) -> Union[AssignmentExpr, None]:
     p.advance()
     rhs = parse_expr(p, bp)
-    expr_node = AssignmentExpr(left_expr, rhs)
+    if rhs is None:
+        return None
+    expr_node = AssignmentExpr(left_expr.name, rhs)
     return expr_node
 
 # Parser -> ast.Expr
-def parse_grouping_expr(p):
+def parse_grouping_expr(p: Parser) -> Union[Expr, None]:
     p.skip_one(SymbolType.LEFT_PAREN)
     grouped_expr = parse_expr(p, BindingPower.DEFAULT_BP)
+    if grouped_expr is None:
+        return None
     p.skip_one(SymbolType.RIGHT_PAREN)
     return grouped_expr
 
