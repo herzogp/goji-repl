@@ -13,9 +13,9 @@ from parser.symbols import (
 
 # EnvItem is a name + BaseExpr
 class EnvItem:
-    def __init__(self, name, expr) -> None:
+    def __init__(self, name: str, expr: Expr) -> None:
         self._name = name
-        self._expr: Expr = expr
+        self._expr = expr
 
 
     @property
@@ -79,17 +79,17 @@ nil_expr = NilExpr(nil_symtoken)
 nil = EnvItem('nil', nil_expr)
 
 class EnvTable:
-    def __init__(self, parent_env=None) -> None:
+    def __init__(self, parent_env: Union[EnvTable, None] = None) -> None:
         self.parent = parent_env
         self.table: list[EnvItem] = [] # could be a HashMap soon
-        if self.parent != None:
-            self.version = self.parent.version
+        # if not self.parent is None:
+        #     self.version = self.parent.version
 
     @property
     def size(self) -> int:
         return len(self.table)
 
-    def set_item(self, item) -> None:
+    def set_item(self, item: EnvItem) -> None:
         if item.isnil():
             return
         # caller is trusted to not modify
@@ -105,7 +105,7 @@ class EnvTable:
         print("Creating item: %s" % new_item)
         self.table.append(new_item)
 
-    def hasTopLevelValue(self, item_name) -> bool:
+    def hasTopLevelValue(self, item_name: str) -> bool:
         if item_name == 'nil':
             return True
         for old_item in self.table:
@@ -113,7 +113,7 @@ class EnvTable:
                 return True
         return False
 
-    def get_item(self, item_name) -> Union[EnvItem, None]:
+    def get_item(self, item_name: str) -> Union[EnvItem, None]:
         if item_name == 'nil':
             return nil
         for old_item in self.table:
@@ -121,12 +121,11 @@ class EnvTable:
                 # trust the caller
                 return old_item
                 # return old_item.clone if the caller is untrusted
-        if self.parent != None:
-            return self.parent.get_item(item_name)
-        else:
+        if self.parent is None:
             return None
+        return self.parent.get_item(item_name)
 
-    def get_integer(self, item_name) -> int:
+    def get_integer(self, item_name: str) -> int:
         env_item = self.get_item(item_name)
         if env_item is None:
             return 0
@@ -134,7 +133,7 @@ class EnvTable:
             return cast(int, env_item.value)
         return 0
 
-    def get_float(self, item_name) -> float:
+    def get_float(self, item_name: str) -> float:
         env_item = self.get_item(item_name)
         if env_item is None:
             return 0.0
@@ -142,7 +141,7 @@ class EnvTable:
             return cast(float, env_item.value)
         return 0.0
 
-    def get_bool(self, item_name) -> bool:
+    def get_bool(self, item_name: str) -> bool:
         env_item = self.get_item(item_name)
         if env_item is None:
             return False
@@ -150,7 +149,7 @@ class EnvTable:
             return cast(bool, env_item.value)
         return False
 
-    def get_text(self, item_name) -> str:
+    def get_text(self, item_name: str) -> str:
         env_item = self.get_item(item_name)
         if env_item is None:
             return "" 

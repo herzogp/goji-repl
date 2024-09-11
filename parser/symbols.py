@@ -1,6 +1,6 @@
 from enum import(Enum)
 
-from typing import Union, Any
+from typing import Union, Any, cast
 
 from tokenizer.tokens import (
     tokenitem_for_numeric,
@@ -154,6 +154,11 @@ class SymToken:
     @property
     def col(self) -> int:
         return self._col
+
+    def as_str(self, def_value: str) -> str:
+        if not self.isstring():
+            return def_value
+        return cast(str, self._val)
 
     def isinteger(self) -> bool:
         return self._typ == SymbolType.LITERAL_INTEGER
