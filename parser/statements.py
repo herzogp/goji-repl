@@ -1,6 +1,10 @@
 # statement.py
+
+from typing import Union
+
 from parser.rules import (
     BindingPower,
+    StmtHandler,
 )
 
 from parser.expressions import (
@@ -11,16 +15,23 @@ from ast.statements import (
     ExpressionStmt,
 )
 
+from ast.interfaces import Stmt
+
+from parser.driver import Parser
+
 from parser.symbols import SymbolType
 
 # Parser -> ast.Stmt
-def parse_statement(p):
+def parse_statement(p: Parser) -> Union[Stmt, None]:
     symtok = p.current_token()
+    if symtok is None:
+        return None
     rp = p.rule_provider
-    statement_rule = rp.statement_rule_for_token_type(symtok.symtype)
-    if statement_rule != None:
-        return statement_rule(p)
-
-    expression = parse_expr(p, BindingPower.DEFAULT_BP)
-    p.skip_one(SymbolType.LINE_END)    
-    return ExpressionStmt(expression)
+    stmt_rule = rp.statement_rule_for_token_type(symtok.symtype)
+    if stmt_rule is None:
+        expression = parse_expr(p, BindingPower.DEFAULT_BP)
+        if expression is None:
+            return None
+        p.skip_one(SymbolType.LINE_END)    
+        return ExpressionStmt(expression)
+    return stmt_rule(p)

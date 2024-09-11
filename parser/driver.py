@@ -90,7 +90,8 @@ class FileParser:
         p = Parser(self._symtokens, self._rule_provider)
         while p.has_tokens():
             st = parse_statement(p)
-            body.append(st)
+            if not st is None:
+                body.append(st)
         return body
 
 class Parser:

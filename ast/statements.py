@@ -18,3 +18,10 @@ class ExpressionStmt(Stmt):
     @property
     def line(self) -> int:
         return self._expression.line
+
+    def stmt(self) -> None:
+        return None
+
+    @property
+    def some_name(self) -> None:
+        return None

@@ -1,3 +1,7 @@
+from typing import Union, cast
+
+from ast.interfaces import Expr
+
 from ast.expressions import (
     AssignmentExpr,
     IdentifierExpr,
@@ -6,6 +10,7 @@ from ast.expressions import (
     FloatExpr,
     BoolExpr,
     StringExpr,
+    BaseExpr,
 )
 
 from parser.symbols import (
@@ -22,7 +27,7 @@ from runtime.env import (
     EnvItem,
 )
 
-def eval_expr(env, expr):
+def eval_expr(env, expr) -> Union[Expr, None]:
     if isinstance(expr, AssignmentExpr):
         result = eval_expr(env, expr.rhs)
         ident_expr = expr.ident
@@ -44,8 +49,8 @@ def eval_expr(env, expr):
     elif isinstance(expr, BinaryExpr):
         operator = expr.operator
         opsym = operator.symtype
-        lhs = eval_expr(env, expr.lhs)
-        rhs = eval_expr(env, expr.rhs)
+        lhs = cast(BaseExpr, eval_expr(env, expr.lhs))
+        rhs = cast(BaseExpr, eval_expr(env, expr.rhs))
         leftval = lhs.exprvalue
         rightval = rhs.exprvalue
         lefttype = lhs.exprtype
@@ -68,12 +73,12 @@ def eval_expr(env, expr):
         print("Another expr named: %s" % type(expr))
     return None
 
-def eval_other(env, other):
+def eval_other(env, other) -> None:
     print("Evaluating [%2d] %s" % (stmt.line, other))
     return None
 
 
-def eval_stmt(env, stmt):
+def eval_stmt(env, stmt) -> Union[Expr, None]:
     if isinstance(stmt, ExpressionStmt):
         return eval_expr(env, stmt.expression)
     else:

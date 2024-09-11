@@ -1,5 +1,7 @@
 from enum import(Enum)
 
+from typing import Union, Any
+
 from tokenizer.tokens import (
     tokenitem_for_numeric,
     tokenitem_for_text,
@@ -45,7 +47,8 @@ class SymbolType(Enum):
 # _lno : source line number
 # _col : source column number
 class SymToken:
-    def __init__(self, token_item):
+    def __init__(self, token_item) -> None:
+        self._val: Any = None
         token_val = token_item.value
         if token_item.is_text():
             if token_val == 'true':
@@ -66,7 +69,7 @@ class SymToken:
         elif token_item.is_numeric():
             if token_val.find('0x') == 0:
                 self._typ = SymbolType.LITERAL_INTEGER # (or FLOAT)
-                self._val = hex2int(token_val)
+                self._val = int(token_val, 16)
             elif (token_val.find('.') >= 0) or (token_val.find('e') > 0):
                 self._typ = SymbolType.LITERAL_FLOAT
                 self._val = float(token_val)
@@ -129,7 +132,7 @@ class SymToken:
         self._lno = token_item.line
         self._col = token_item.col
 
-    def __str__(self):
+    def __str__(self) -> str:
         base_name = "SymbolType.%s" % self._typ.name
         loc_info = "[%d:%d]" % (self._lno, self._col)
         if self._val != '':
@@ -137,37 +140,37 @@ class SymToken:
         return "%s%s" % (base_name, loc_info)
 
     @property
-    def symtype(self):
+    def symtype(self) -> SymbolType:
         return self._typ
 
     @property
-    def symvalue(self):
+    def symvalue(self) -> Union[str, int, float, bool]:
         return self._val
 
     @property
-    def line(self):
+    def line(self) -> int:
         return self._lno
 
     @property
-    def col(self):
+    def col(self) -> int:
         return self._col
 
-    def isinteger(self):
+    def isinteger(self) -> bool:
         return self._typ == SymbolType.LITERAL_INTEGER
 
-    def isfloat(self):
+    def isfloat(self) -> bool:
         return self._typ == SymbolType.LITERAL_FLOAT
 
-    def isbool(self):
+    def isbool(self) -> bool:
         return self._typ == SymbolType.LITERAL_BOOL
 
-    def isstring(self):
+    def isstring(self) -> bool:
         return self._typ == SymbolType.LITERAL_STRING
 
-    def isnil(self):
+    def isnil(self) -> bool:
         return self._typ == SymbolType.LITERAL_NIL
 
-def symbolized(tokens):
+def symbolized(tokens) -> list[SymToken]:
     sym_tokens = []
     for tk_item in tokens:
         sym_tokens.append(SymToken(tk_item))
@@ -175,15 +178,15 @@ def symbolized(tokens):
 
 nil_symtoken = SymToken(nil_token_item)
 
-def symtoken_for_numeric(val):
+def symtoken_for_numeric(val) -> SymToken:
     token_item = tokenitem_for_numeric(val)
     return SymToken(token_item)
 
-def symtoken_for_text(val):
+def symtoken_for_text(val) -> SymToken:
     token_item = tokenitem_for_text(val)
     return SymToken(token_item)
 
-def symtoken_for_identifier(val):
+def symtoken_for_identifier(val) -> SymToken:
     token_item = tokenitem_for_identifier(val)
     return SymToken(token_item)
 
