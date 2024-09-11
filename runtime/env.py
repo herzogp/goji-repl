@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union, Any, cast
 
 from ast.interfaces import Expr
@@ -59,7 +60,7 @@ class EnvItem:
     def isfunction(self) -> bool:
         return False
 
-    def clone(self) -> EnvItem:
+    def clone(self): # -> EnvItem:
         new_item = EnvItem(self._name, self._expr)
         return new_item
 

@@ -9,6 +9,7 @@ from parser.rules import (
 
 from parser.expressions import (
     parse_expr,
+    global_rule_provider,
 )
 
 from ast.statements import (
@@ -26,7 +27,8 @@ def parse_statement(p: Parser) -> Union[Stmt, None]:
     symtok = p.current_token()
     if symtok is None:
         return None
-    rp = p.rule_provider
+    # [PH] rp = p.rule_provider
+    rp = global_rule_provider
     stmt_rule = rp.statement_rule_for_token_type(symtok.symtype)
     if stmt_rule is None:
         expression = parse_expr(p, BindingPower.DEFAULT_BP)

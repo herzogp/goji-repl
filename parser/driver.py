@@ -5,13 +5,7 @@ from tokenizer.tokens import (
     TokenItem,
 )
 
-from parser.rules import (
-    BindingPower,
-    RuleProvider,
-    NullRule,
-    LeftRule,
-    StatementRule,
-)
+from parser.parser import Parser
 
 from parser.symbols import (
     SymbolType,
@@ -37,7 +31,7 @@ class FileParser:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
-        self._rule_provider = create_rule_provider()
+        # self._rule_provider = create_rule_provider()
 
     def show_symtokens(self) -> None:
         print("")
@@ -87,67 +81,13 @@ class FileParser:
     def parse(self) -> list[Stmt]:
         # parsed_result = parseInfo.parse_expr(self.tokens)
         body = []
-        p = Parser(self._symtokens, self._rule_provider)
+        # p = Parser(self._symtokens, self._rule_provider)
+        p = Parser(self._symtokens)
         while p.has_tokens():
             st = parse_statement(p)
             if not st is None:
                 body.append(st)
         return body
-
-class Parser:
-    def __init__(self, symtokens: list[SymToken], rule_provider: RuleProvider) -> None:
-        self._symtokens = symtokens
-        self._pos = 0
-        self._ntx = len(symtokens)
-        self._rule_provider = rule_provider
-
-    @property
-    def rule_provider(self) -> RuleProvider:
-        return self._rule_provider
-
-    def has_tokens(self) -> bool:
-        return self._pos < self._ntx
-
-    def current_token(self) -> Union[SymToken, None]:
-        if not self.has_tokens():
-            print("current_token() -> None")
-            return None
-        print("current_token() -> %s" % self._symtokens[self._pos])
-        return self._symtokens[self._pos]
-
-    def peek_prev_token(self) -> Union[SymToken, None]:
-        idx = self._pos - 1
-        if idx >= 0:
-            symtok = self._symtokens[idx]
-            return symtok
-        return None
-
-    def peek_next_token(self) -> Union[SymToken, None]:
-        idx = self._pos + 1
-        if idx < self._ntx:
-            symtok = self._symtokens[idx]
-            return symtok
-        return None
-
-    def skip_one(self, type_to_skip, err_msg='') -> None:
-        symtok = self.current_token()
-        if symtok is None:
-            if err_msg == '':
-                err_msg = "End of Tokens - unable to skip_one()"
-            raise Exception(err_msg)
-        if symtok.symtype != type_to_skip:
-            if err_msg == '':
-                err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtok)
-            raise Exception(err_msg)
-        self.advance()
-
-    def advance(self) -> None:
-        oldpos = self._pos
-        idx = self._pos + 1
-        if idx <= self._ntx:
-            self.pos = idx
-        print("advance: %d to %d" % (oldpos, self.pos))
-        return
 
 # ---------------------------------------------------------------------- 
 # Literals
@@ -226,34 +166,6 @@ class Parser:
 # 	[ ] NUM_TOKENS
 
 
-def create_rule_provider() -> RuleProvider:
-
-    rule_provider = RuleProvider()
-
-    # Literals & Symbols
-    all_literals = [
-        SymbolType.LITERAL_INTEGER,
-        SymbolType.LITERAL_FLOAT,
-        SymbolType.LITERAL_STRING,
-        SymbolType.LITERAL_BOOL,
-        SymbolType.IDENTIFIER,
-    ]
-    bp = BindingPower.PRIMARY
-    for x in all_literals:
-        rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
-
-    # Math Operations
-    rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
-    rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
-
-    # Assignment
-    rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
-
-    # Grouping and Scope
-    rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
-
-    return rule_provider
-
 def pratt_parse_program(file_path: str) -> None:
     tokens = tokenize_program(file_path)
     tk_count = len(tokens)
@@ -262,3 +174,34 @@ def pratt_parse_program(file_path: str) -> None:
     parseInfo = FileParser(file_path, tokens)
     parseInfo.show_symtokens()
     parsed_result = parseInfo.parse()
+
+# def create_rule_provider() -> RuleProvider:
+# 
+#     rule_provider = RuleProvider()
+# 
+#     # Literals & Symbols
+#     all_literals = [
+#         SymbolType.LITERAL_INTEGER,
+#         SymbolType.LITERAL_FLOAT,
+#         SymbolType.LITERAL_STRING,
+#         SymbolType.LITERAL_BOOL,
+#         SymbolType.IDENTIFIER,
+#     ]
+#     bp = BindingPower.PRIMARY
+#     for x in all_literals:
+#         rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
+# 
+#     # Math Operations
+#     rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
+#     rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
+# 
+#     # Assignment
+#     rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
+# 
+#     # Grouping and Scope
+#     rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
+# 
+#     return rule_provider
+
+# Moved to parser/expressions.py
+# global_rule_provider = create_rule_provider()

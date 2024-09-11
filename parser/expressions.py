@@ -2,6 +2,10 @@ from typing import Union, cast
 
 from parser.rules import (
     BindingPower,
+    RuleProvider,
+    NullRule,
+    LeftRule,
+    StatementRule,
 )
 
 from parser.symbols import (
@@ -20,7 +24,7 @@ from ast.expressions import (
 
 from ast.interfaces import Expr
 
-from parser.driver import Parser
+from parser.parser import Parser
 
 # Parser -> ast.Expr
 # and advances the parser position
@@ -49,7 +53,8 @@ def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: Expr) -> Union[Binary
     operator = p.current_token()
     if operator is None:
         return None
-    rp = p.rule_provider
+    rp = global_rule_provider
+    # [PH] rp = p.rule_provider
     operator_bp = rp.bp_for_token_type(operator.symtype)
     p.advance()
     right_expr = parse_expr(p, operator_bp) # PH - was left_bp
@@ -68,7 +73,9 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
     # Check if there is a NullDenoted handler for
     # this type of token
-    rp = p.rule_provider
+    rp = global_rule_provider
+    # [PH] rp = p.rule_provider
+    #
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule is None:
         print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
@@ -125,4 +132,34 @@ def parse_grouping_expr(p: Parser) -> Union[Expr, None]:
         return None
     p.skip_one(SymbolType.RIGHT_PAREN)
     return grouped_expr
+
+def create_rule_provider() -> RuleProvider:
+
+    rule_provider = RuleProvider()
+
+    # Literals & Symbols
+    all_literals = [
+        SymbolType.LITERAL_INTEGER,
+        SymbolType.LITERAL_FLOAT,
+        SymbolType.LITERAL_STRING,
+        SymbolType.LITERAL_BOOL,
+        SymbolType.IDENTIFIER,
+    ]
+    bp = BindingPower.PRIMARY
+    for x in all_literals:
+        rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
+
+    # Math Operations
+    rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
+    rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
+
+    # Assignment
+    rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
+
+    # Grouping and Scope
+    rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
+
+    return rule_provider
+
+global_rule_provider = create_rule_provider()
 
