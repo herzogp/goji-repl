@@ -31,8 +31,9 @@ def parse_statement(p: Parser) -> Union[Stmt, None]:
     stmt_rule = rp.statement_rule_for_token_type(symtok.symtype)
     if stmt_rule is None:
         expression = parse_expr(p, BindingPower.DEFAULT_BP)
+        p.skip_one(SymbolType.LINE_END)    
         if expression is None:
             return None
-        p.skip_one(SymbolType.LINE_END)    
+        # p.skip_one(SymbolType.LINE_END)    
         return ExpressionStmt(expression)
     return stmt_rule(p)

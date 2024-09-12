@@ -66,6 +66,10 @@ def run_program(options: GojiOptions) -> None:
         for stmt in all_statements:
             print("[%2d] %s" % (stmt.line, stmt))
             result = eval_stmt(program_env, stmt) 
+            if result is None:
+                print("[X] Evaluation returned None")
+            else:
+                print("[ ] Evaluation returned ", result)
             print("==> %s" % result)
             print("")
 

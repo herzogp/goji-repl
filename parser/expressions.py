@@ -9,7 +9,7 @@ from parser.rules import (
 )
 
 from parser.symbols import (
-
+    symtoken_for_identifier,
     SymbolType,
 )
 
@@ -86,7 +86,8 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     if null_rule is None:
         if not symtok.isinputend():
             print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
-        p.advance()
+            # advance to the line_end
+            p.advance_to_sym(SymbolType.LINE_END)
         return None
 
     # Use the null_rule to parse this as the left node
@@ -132,7 +133,13 @@ def parse_assignment_expr(p: Parser, left_expr: IdentifierExpr, bp: BindingPower
     rhs = parse_expr(p, bp)
     if rhs is None:
         return None
-    expr_node = AssignmentExpr(left_expr.name, rhs)
+    if not isinstance(left_expr, IdentifierExpr):
+        return None
+        # print("?? IdentifierExpr ?? ", left_expr)
+        # id_name_symtoken = symtoken_for_identifier('_')
+    else:
+        id_name_symtoken = left_expr.name
+    expr_node = AssignmentExpr(id_name_symtoken, rhs)
     return expr_node
 
 # Parser -> ast.Expr

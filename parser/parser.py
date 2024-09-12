@@ -3,7 +3,7 @@ from typing import Union
 from options import GojiOptions
 
 from parser.symbols import (
-    # SymbolType,
+    SymbolType,
     SymToken,
     # symbolized,
 )
@@ -55,8 +55,11 @@ class Parser:
             return symtok
         return None
 
-    def skip_one(self, type_to_skip, err_msg='') -> None:
+    def skip_one(self, type_to_skip: SymbolType, err_msg='') -> None:
         symtok = self.current_token()
+        if symtok.isinputend():
+            self.advance()
+            return None
         if symtok is None:
             if err_msg == '':
                 err_msg = "End of Tokens - unable to skip_one()"
@@ -75,3 +78,11 @@ class Parser:
         # if self.show_tokens:
         #     print("advance: %d to %d" % (oldpos, self._pos))
         return
+
+    def advance_to_sym(self, sym: SymbolType) -> None:
+        symtok = self.current_token()
+        while symtok.symtype != sym:
+            if symtok.symtype == SymbolType.INPUT_END:
+                return
+            self.advance()
+            symtok = self.current_token()
