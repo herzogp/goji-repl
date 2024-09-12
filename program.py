@@ -61,7 +61,7 @@ def run_program(program_file):
         print("%d statements will be evaluated" % len(all_statements))
         for stmt in all_statements:
             print("[%2d] %s" % (stmt.line, stmt))
-            result = eval_stmt(program_env, stmt) 
+            # result = eval_stmt(program_env, stmt) 
             print("==> %s" % result)
             print("")
 

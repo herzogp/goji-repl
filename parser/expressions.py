@@ -9,6 +9,7 @@ from parser.rules import (
 )
 
 from parser.symbols import (
+
     SymbolType,
 )
 
@@ -29,8 +30,10 @@ from parser.parser import Parser
 # Parser -> ast.Expr
 # and advances the parser position
 def parse_primary_expr(p: Parser) -> Union[Expr, None]:
+    print("parse_primary_expr()")
     symtok = p.current_token()
     if symtok is None:
+        print("parse_primary_expr without advancing")
         return None
     if symtok.symtype == SymbolType.LITERAL_INTEGER:
         expr = cast(Expr, IntegerExpr(symtok))
@@ -50,6 +53,7 @@ def parse_primary_expr(p: Parser) -> Union[Expr, None]:
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 # and advances the parser position
 def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: Expr) -> Union[BinaryExpr, None]:
+    print("parse_binary_expr()")
     operator = p.current_token()
     if operator is None:
         return None
@@ -66,6 +70,7 @@ def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: Expr) -> Union[Binary
 # Parser -> BindingPower -> ast.Expr
 # bp is highest value bp seen so far
 def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
+    print("parse_expr()")
 
     symtok = p.current_token()
     if symtok is None:
@@ -74,16 +79,19 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     # Check if there is a NullDenoted handler for
     # this type of token
     rp = global_rule_provider
+    # rp.show_all_rules()
     # [PH] rp = p.rule_provider
     #
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule is None:
         print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
+        p.advance()
         return None
 
     # Use the null_rule to parse this as the left node
     # (which also will advance the parser pos)
     left_node = null_rule(p)
+    print("Applied the null_rule to provide left_node: ", left_node)
 
     symtok = p.current_token()
     if symtok is None:
@@ -96,6 +104,11 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     # for something like "10 + 4" this will fast forward to the 4, 
     # but 
     while next_bp != None and (next_bp.value > overall_bp.value):
+
+        print("next_bp: ", next_bp)
+        print("call left_rule_for_token_type on symtok: ", symtok)
+        print("symtok.symtype is: ", symtok.symtype)
+
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule is None:
             print("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
@@ -117,6 +130,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 def parse_assignment_expr(p: Parser, left_expr: IdentifierExpr, bp: BindingPower) -> Union[AssignmentExpr, None]:
+    print("parse_assignment_expr()")
     p.advance()
     rhs = parse_expr(p, bp)
     if rhs is None:

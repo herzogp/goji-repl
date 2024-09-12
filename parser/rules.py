@@ -137,6 +137,7 @@ class RuleProvider:
     def left_rule_for_token_type(self, ntype: SymbolType) -> Union[LeftHandler, None]:
         val = self.left_rules.get(ntype)
         if val is None:
+            print("Unable to get val for ntype: ", ntype)
             return None
         return cast(LeftHandler, val.handler)
     

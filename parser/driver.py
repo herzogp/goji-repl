@@ -79,9 +79,7 @@ class FileParser:
     # p.parse_stmt()
     #----------------------------------------------------------------------
     def parse(self) -> list[Stmt]:
-        # parsed_result = parseInfo.parse_expr(self.tokens)
         body = []
-        # p = Parser(self._symtokens, self._rule_provider)
         p = Parser(self._symtokens)
         while p.has_tokens():
             st = parse_statement(p)
@@ -175,33 +173,3 @@ def pratt_parse_program(file_path: str) -> None:
     parseInfo.show_symtokens()
     parsed_result = parseInfo.parse()
 
-# def create_rule_provider() -> RuleProvider:
-# 
-#     rule_provider = RuleProvider()
-# 
-#     # Literals & Symbols
-#     all_literals = [
-#         SymbolType.LITERAL_INTEGER,
-#         SymbolType.LITERAL_FLOAT,
-#         SymbolType.LITERAL_STRING,
-#         SymbolType.LITERAL_BOOL,
-#         SymbolType.IDENTIFIER,
-#     ]
-#     bp = BindingPower.PRIMARY
-#     for x in all_literals:
-#         rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
-# 
-#     # Math Operations
-#     rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
-#     rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
-# 
-#     # Assignment
-#     rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
-# 
-#     # Grouping and Scope
-#     rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
-# 
-#     return rule_provider
-
-# Moved to parser/expressions.py
-# global_rule_provider = create_rule_provider()

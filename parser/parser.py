@@ -9,6 +9,7 @@ from parser.symbols import (
 class Parser:
     #def __init__(self, symtokens: list[SymToken], rule_provider: RuleProvider) -> None:
     def __init__(self, symtokens: list[SymToken]) -> None:
+        print("initializing parser with %d tokens" % len(symtokens))
         self._symtokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
@@ -25,7 +26,7 @@ class Parser:
         if not self.has_tokens():
             print("current_token() -> None")
             return None
-        print("current_token() -> %s" % self._symtokens[self._pos])
+        print("pos: %d current_token() -> %s" % (self._pos, self._symtokens[self._pos]))
         return self._symtokens[self._pos]
 
     def peek_prev_token(self) -> Union[SymToken, None]:
@@ -43,6 +44,7 @@ class Parser:
         return None
 
     def skip_one(self, type_to_skip, err_msg='') -> None:
+        print("skip_one")
         symtok = self.current_token()
         if symtok is None:
             if err_msg == '':
@@ -58,6 +60,6 @@ class Parser:
         oldpos = self._pos
         idx = self._pos + 1
         if idx <= self._ntx:
-            self.pos = idx
-        print("advance: %d to %d" % (oldpos, self.pos))
+            self._pos = idx
+        print("advance: %d to %d" % (oldpos, self._pos))
         return
