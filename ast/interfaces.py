@@ -10,6 +10,10 @@ class Stmt(ABC):
     def some_name(self) -> None:
         pass
 
+    @property
+    def line(self) -> int:
+        return 0
+
 class Expr(ABC):
     @abstractmethod
     def expr(self) -> None:

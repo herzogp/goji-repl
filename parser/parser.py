@@ -34,7 +34,7 @@ class Parser:
 
     def current_token(self) -> Union[SymToken, None]:
         if not self.has_tokens():
-            if options.show_tokens:
+            if self.show_tokens:
                 print("current_token() -> None")
             return None
         # if self.show_tokens:
