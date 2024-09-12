@@ -1,5 +1,7 @@
 from typing import Union
 
+from options import GojiOptions
+
 from tokenizer.tokens import (
     tokenize_program,
     TokenItem,
@@ -31,7 +33,6 @@ class FileParser:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
-        # self._rule_provider = create_rule_provider()
 
     def show_symtokens(self) -> None:
         print("")
@@ -78,9 +79,9 @@ class FileParser:
     # 4. return st.BlockStatement(body)
     # p.parse_stmt()
     #----------------------------------------------------------------------
-    def parse(self) -> list[Stmt]:
+    def parse(self, options: GojiOptions) -> list[Stmt]:
         body = []
-        p = Parser(self._symtokens)
+        p = Parser(self._symtokens, options)
         while p.has_tokens():
             st = parse_statement(p)
             if not st is None:
@@ -164,12 +165,13 @@ class FileParser:
 # 	[ ] NUM_TOKENS
 
 
-def pratt_parse_program(file_path: str) -> None:
+def pratt_parse_program(file_path: str, options: GojiOptions) -> list[Stmt]:
     tokens = tokenize_program(file_path)
     tk_count = len(tokens)
-    if tk_count > 0:
+    if tk_count > 0 and options.show_tokens:
         print('%i <Pratt> tokens found in "%s"' % (tk_count, file_path))
     parseInfo = FileParser(file_path, tokens)
-    parseInfo.show_symtokens()
-    parsed_result = parseInfo.parse()
-
+    if options.show_tokens:
+        parseInfo.show_symtokens()
+    parsed_result = parseInfo.parse(options)
+    return parsed_result

@@ -27,7 +27,6 @@ def parse_statement(p: Parser) -> Union[Stmt, None]:
     symtok = p.current_token()
     if symtok is None:
         return None
-    # [PH] rp = p.rule_provider
     rp = global_rule_provider
     stmt_rule = rp.statement_rule_for_token_type(symtok.symtype)
     if stmt_rule is None:

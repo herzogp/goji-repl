@@ -156,9 +156,10 @@ class SymToken:
         return self._col
 
     def as_str(self, def_value: str) -> str:
-        if not self.isstring():
-            return def_value
-        return cast(str, self._val)
+        if self.isstring() or self.isident():
+            return cast(str, self._val)
+        print("is not a string: ", self)
+        return def_value
 
     def isinteger(self) -> bool:
         return self._typ == SymbolType.LITERAL_INTEGER
@@ -171,6 +172,9 @@ class SymToken:
 
     def isstring(self) -> bool:
         return self._typ == SymbolType.LITERAL_STRING
+
+    def isident(self) -> bool:
+        return self._typ == SymbolType.IDENTIFIER
 
     def isnil(self) -> bool:
         return self._typ == SymbolType.LITERAL_NIL

@@ -40,7 +40,7 @@ class NumericOperands:
             if righttype == SymbolType.LITERAL_INTEGER:
                 self._left_int = cast(int, leftval)
                 self._right_int = cast(int, rightval)
-                self._is_float = False
+                self._are_float = False
             elif righttype == SymbolType.LITERAL_FLOAT:
                 self._left_float = float(cast(int, leftval))
                 self._right_float = cast(float, rightval)

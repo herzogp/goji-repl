@@ -1,5 +1,7 @@
 from typing import Union
 
+from options import GojiOptions
+
 from parser.symbols import (
     # SymbolType,
     SymToken,
@@ -7,26 +9,36 @@ from parser.symbols import (
 )
 
 class Parser:
-    #def __init__(self, symtokens: list[SymToken], rule_provider: RuleProvider) -> None:
-    def __init__(self, symtokens: list[SymToken]) -> None:
-        print("initializing parser with %d tokens" % len(symtokens))
+    def __init__(self, symtokens: list[SymToken], options: GojiOptions) -> None:
+        if options.show_tokens:
+            print("initializing parser with %d tokens" % len(symtokens))
         self._symtokens = symtokens
         self._pos = 0
         self._ntx = len(symtokens)
-        # [PH] self._rule_provider = rule_provider
+        self._options = options
 
-    # [PH] @property
-    # [PH] def rule_provider(self) -> RuleProvider:
-    # [PH]     return self._rule_provider
+    @property
+    def show_tokens(self) -> bool:
+        return self._options.show_tokens
+
+    @property
+    def show_rules(self) -> bool:
+        return self._options.show_rules
+
+    @property
+    def show_parsing(self) -> bool:
+        return self._options.show_parsing
 
     def has_tokens(self) -> bool:
         return self._pos < self._ntx
 
     def current_token(self) -> Union[SymToken, None]:
         if not self.has_tokens():
-            print("current_token() -> None")
+            if options.show_tokens:
+                print("current_token() -> None")
             return None
-        print("pos: %d current_token() -> %s" % (self._pos, self._symtokens[self._pos]))
+        # if self.show_tokens:
+        #     print("pos: %d current_token() -> %s" % (self._pos, self._symtokens[self._pos]))
         return self._symtokens[self._pos]
 
     def peek_prev_token(self) -> Union[SymToken, None]:
@@ -44,7 +56,6 @@ class Parser:
         return None
 
     def skip_one(self, type_to_skip, err_msg='') -> None:
-        print("skip_one")
         symtok = self.current_token()
         if symtok is None:
             if err_msg == '':
@@ -61,5 +72,6 @@ class Parser:
         idx = self._pos + 1
         if idx <= self._ntx:
             self._pos = idx
-        print("advance: %d to %d" % (oldpos, self._pos))
+        # if self.show_tokens:
+        #     print("advance: %d to %d" % (oldpos, self._pos))
         return

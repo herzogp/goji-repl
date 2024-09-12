@@ -10,6 +10,8 @@ from ast.expressions import (
     BoolExpr,
 )
 
+from options import GojiOptions
+
 from runtime.env import (
     EnvItem,
     EnvTable,
@@ -28,7 +30,9 @@ from parser.symbols import (
 class EngineVersion(Enum):
     V0_2_0 = 10
 
-def run_program(program_file):
+def run_program(options: GojiOptions) -> None:
+    program_file = options.program_file
+
     # Setup the root environment
     program_env = EnvTable()
 
@@ -52,16 +56,16 @@ def run_program(program_file):
     program_env.set_item(builtin)
 
     # parse and show/eval AST
-    all_statements = pratt_parse_program(program_file)
+    all_statements = pratt_parse_program(program_file, options)
 
     # Time to evaluate
     if all_statements == None:
         print("Nothing to evaluate")
     else:
-        print("%d statements will be evaluated" % len(all_statements))
+        # print("%d statements will be evaluated" % len(all_statements))
         for stmt in all_statements:
             print("[%2d] %s" % (stmt.line, stmt))
-            # result = eval_stmt(program_env, stmt) 
+            result = eval_stmt(program_env, stmt) 
             print("==> %s" % result)
             print("")
 
