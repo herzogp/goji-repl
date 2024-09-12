@@ -174,4 +174,6 @@ def pratt_parse_program(file_path: str, options: GojiOptions) -> list[Stmt]:
     if options.show_tokens:
         parseInfo.show_symtokens()
     parsed_result = parseInfo.parse(options)
+    print("parsing completed")
+    print("")
     return parsed_result

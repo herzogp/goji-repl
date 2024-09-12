@@ -176,6 +176,9 @@ class SymToken:
     def isident(self) -> bool:
         return self._typ == SymbolType.IDENTIFIER
 
+    def isinputend(self) -> bool:
+        return self._typ == SymbolType.INPUT_END
+
     def isnil(self) -> bool:
         return self._typ == SymbolType.LITERAL_NIL
 

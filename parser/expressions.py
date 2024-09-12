@@ -84,7 +84,8 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     rp = global_rule_provider
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule is None:
-        print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
+        if not symtok.isinputend():
+            print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
         p.advance()
         return None
 
