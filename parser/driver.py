@@ -29,10 +29,11 @@ from parser.statements import (
 from ast.interfaces import Stmt
 
 class FileParser:
-    def __init__(self, filename: str, tokens: list[TokenItem]) -> None:
+    def __init__(self, filename: str, tokens: list[TokenItem], all_lines: list[str]) -> None:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
+        self._all_lines = all_lines
 
     def show_symtokens(self) -> None:
         print("")
@@ -83,7 +84,10 @@ class FileParser:
         body = []
         p = Parser(self._symtokens, options)
         while p.has_tokens():
-            st = parse_statement(p)
+            symtoken = p.current_token()
+            if not symtoken is None:
+                line_idx = symtoken.line - 1
+            st = parse_statement(p, self._all_lines[line_idx])
             if not st is None:
                 body.append(st)
         return body
@@ -165,15 +169,15 @@ class FileParser:
 # 	[ ] NUM_TOKENS
 
 
-def pratt_parse_program(file_path: str, options: GojiOptions) -> list[Stmt]:
-    tokens = tokenize_program(file_path)
+def pratt_parse_program(file_path: str, options: GojiOptions) -> tuple[list[Stmt], list[str]]:
+    tokens, all_lines = tokenize_program(file_path)
     tk_count = len(tokens)
     if tk_count > 0 and options.show_tokens:
         print('%i <Pratt> tokens found in "%s"' % (tk_count, file_path))
-    parseInfo = FileParser(file_path, tokens)
+    parseInfo = FileParser(file_path, tokens, all_lines)
     if options.show_tokens:
         parseInfo.show_symtokens()
     parsed_result = parseInfo.parse(options)
     print("parsing completed")
     print("")
-    return parsed_result
+    return (parsed_result, all_lines)

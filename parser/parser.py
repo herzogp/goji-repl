@@ -57,14 +57,13 @@ class Parser:
 
     def skip_one(self, type_to_skip: SymbolType, err_msg='') -> None:
         symtok = self.current_token()
-        if symtok.isinputend():
-            self.advance()
-            return None
         if symtok is None:
             if err_msg == '':
                 err_msg = "End of Tokens - unable to skip_one()"
             raise Exception(err_msg)
-        if symtok.symtype != type_to_skip:
+        elif symtok.isinputend():
+            self.advance()
+        elif symtok.symtype != type_to_skip:
             if err_msg == '':
                 err_msg = "Expected %s - saw %s" % (type_to_skip.name, symtok)
             raise Exception(err_msg)
@@ -81,8 +80,14 @@ class Parser:
 
     def advance_to_sym(self, sym: SymbolType) -> None:
         symtok = self.current_token()
-        while symtok.symtype != sym:
-            if symtok.symtype == SymbolType.INPUT_END:
+        if symtok is None:
+            return
+        the_type = symtok.symtype
+        while the_type != sym:
+            if the_type == SymbolType.INPUT_END:
                 return
             self.advance()
             symtok = self.current_token()
+            if symtok is None:
+                return
+            the_type = symtok.symtype

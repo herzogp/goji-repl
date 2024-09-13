@@ -271,7 +271,7 @@ class Parser:
 
 # parse_program: FilePath -> Node[]
 def new_parse_program(file_path):
-    tokens = tokenize_program(file_path)
+    tokens, all_lines = tokenize_program(file_path)
     tk_count = len(tokens)
     if tk_count > 0:
         print('%i ~new~ tokens found in "%s"' % (tk_count, file_path))
@@ -296,7 +296,7 @@ def new_parse_program(file_path):
     return all_nodes
 
 def parse_program(file_path):
-    tokens = tokenize_program(file_path)
+    tokens, all_lines = tokenize_program(file_path)
     tk_count = len(tokens)
     if tk_count > 0:
         print('%i tokens found in "%s"' % (tk_count, file_path))

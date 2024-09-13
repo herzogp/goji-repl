@@ -86,13 +86,16 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     if null_rule is None:
         if not symtok.isinputend():
             print("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
-            # advance to the line_end
             p.advance_to_sym(SymbolType.LINE_END)
         return None
 
     # Use the null_rule to parse this as the left node
     # (which also will advance the parser pos)
     left_node = null_rule(p)
+    if left_node is None:
+        print("ERROR: Expected a symbol after applying the NullDenoted handler - %s" % p.current_token())
+        p.advance_to_sym(SymbolType.LINE_END)
+        return None
 
     symtok = p.current_token()
     if symtok is None:
@@ -109,12 +112,17 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule is None:
             print("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
+            p.advance_to_sym(SymbolType.LINE_END)
             return None
 
         # Use the left_rule to parse this as the 
         # new left node (which incorporates the previous left node)
         # (which also will advance the parser pos)
         left_node = left_rule(p, left_node, overall_bp)
+        if left_node is None:
+            print("ERROR: Expected a symbol after applying the LeftDenoted handler - %s" % p.current_token())
+            p.advance_to_sym(SymbolType.LINE_END)
+            return None
 
         # Since the parser has been advanced,
         # get the new current_token

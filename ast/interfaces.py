@@ -11,6 +11,7 @@ class Stmt(ABC):
         pass
 
     @property
+    @abstractmethod
     def line(self) -> int:
         return 0
 

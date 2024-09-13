@@ -84,7 +84,7 @@ def basic_tokens():
 #  Test the tokenizer
 class TestTokenizer:
     def test_basic_tokenizer(self, basic_tokens):
-        all_tokens = tokenize_program("testdata/prog.ph")
+        all_tokens, all_lines = tokenize_program("testdata/prog.ph")
         # ----------------------------------------------------------------------
         # To always see stdout output invoke as `pytest -s`
         # Remember to import show_tokens at the top of this file

@@ -56,7 +56,7 @@ def run_program(options: GojiOptions) -> None:
     program_env.set_item(builtin)
 
     # parse and show/eval AST
-    all_statements = pratt_parse_program(program_file, options)
+    all_statements, all_lines = pratt_parse_program(program_file, options)
 
     # Time to evaluate
     if all_statements == None:
@@ -64,13 +64,13 @@ def run_program(options: GojiOptions) -> None:
     else:
         # print("%d statements will be evaluated" % len(all_statements))
         for stmt in all_statements:
-            print("[%2d] %s" % (stmt.line, stmt))
+            lno = stmt.line
+            print("[%2d] %s" % (lno, all_lines[lno - 1]))
             result = eval_stmt(program_env, stmt) 
             if result is None:
-                print("[X] Evaluation returned None")
+                print("==> Runtime Error")
             else:
-                print("[ ] Evaluation returned ", result)
-            print("==> %s" % result)
+                print("==> %s" % result)
             print("")
 
     # show ending environment

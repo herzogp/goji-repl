@@ -367,7 +367,8 @@ def tokenize_program(file_path):
     if lx == 1:
         suffix = ''
     print('Processed %d line%s from "%s"' % (lx, suffix, file_path))
+    print("")
 
     tk.mark_end_of_input()
 
-    return tk.get_tokens()
+    return (tk.get_tokens(), all_lines)

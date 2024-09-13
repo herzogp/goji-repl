@@ -114,6 +114,7 @@ def eval_expr(env: EnvTable, expr: Expr) -> Union[Expr, None]:
         return eval_binary_expr(env, expr)
     else:
         print("Another expr named: %s" % type(expr))
+        return None
     return None
 
 
