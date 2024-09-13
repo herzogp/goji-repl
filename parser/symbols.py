@@ -36,6 +36,9 @@ class SymbolType(Enum):
     # Assignment
     OP_ASSIGN       = 40 # '='
 
+    # Indexing
+    COMMA           = 50 # ','
+
     # Meta Info
     LINE_END        = 1002
     INPUT_END       = 1003
@@ -111,6 +114,8 @@ class SymToken:
                 self._typ = SymbolType.LEFT_BRACE
             elif token_val == '}':
                 self._typ = SymbolType.RIGHT_BRACE
+            elif token_val == ',':
+                self._typ = SymbolType.COMMA
             elif token_val == '':
                 print("created a nil SymToken")
                 self._typ = SymbolType.LITERAL_NIL

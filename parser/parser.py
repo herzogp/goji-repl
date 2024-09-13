@@ -9,7 +9,7 @@ from parser.symbols import (
 )
 
 class Parser:
-    def __init__(self, symtokens: list[SymToken], options: GojiOptions) -> None:
+    def __init__(self, symtokens: list[SymToken], all_lines: list[str], options: GojiOptions) -> None:
         if options.show_tokens:
             print("initializing parser with %d tokens" % len(symtokens))
         self._symtokens = symtokens

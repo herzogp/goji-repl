@@ -1,6 +1,6 @@
 from typing import Union
 
-from ast.interfaces import Expr
+from ast.interfaces import Expr, Stmt
 
 from parser.symbols import SymToken, SymbolType
 
@@ -110,6 +110,44 @@ class AssignmentExpr(Expr):
     def expr(self) -> None:
         return None
 
+class ParamsExpr(Expr):
+    def __init__(self, params: list[IdentifierExpr]) -> None:
+        super().__init__()
+        self._params = params
+
+    @property
+    def params(self) -> list[IdentifierExpr]:
+        return self._params
+
+    def __str__(self) -> str:
+        all_params = [str(x) for x in self._params]
+        str_params = ", ".join(all_params)
+        return "ParamsExpr(%s)" % str_params
+
+    def expr(self) -> None:
+        return None
+
+class FunctionExpr(IdentifierExpr):
+    def __init__(self, sym: SymToken, params: ParamsExpr, body: Stmt) -> None:
+        super().__init__(sym)
+        self._params = params
+        self._body = body
+
+    @property
+    def params(self) -> list[IdentifierExpr]:
+        return self._params
+
+    @property
+    def body(self) -> Stmt:
+        return self._body
+
+    def str(self) -> str:
+        all_params = [str(x) for x in self._params]
+        str_params = ", ".join(all_params)
+        return "FunctionExpr(%s %s)" % (self.name, str_params)
+
+    def expr(self) -> None:
+        return None
 
 class BinaryExpr(Expr):
     def __init__(self, op: SymToken, lhs: Expr, rhs: Expr):

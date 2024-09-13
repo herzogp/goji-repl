@@ -34,6 +34,7 @@ class FileParser:
         self._line = 0
         self._symtokens = symbolized(tokens)
         self._all_lines = all_lines
+        self._ntx = len(self._all_lines)
 
     def show_symtokens(self) -> None:
         print("")
@@ -62,6 +63,12 @@ class FileParser:
     def has_line_numbers(self) -> bool:
         return self._line > 0
 
+    def source_line(self, one_based_lno: int) -> str:
+        idx = one_based_lno - 1
+        if idx < 0 or idx >= self._ntx:
+            return '<line %d not found>' % one_based_lno
+        return self._all_lines[idx]
+
     #----------------------------------------------------------------------
     # Top-level function
     #----------------------------------------------------------------------
@@ -82,14 +89,13 @@ class FileParser:
     #----------------------------------------------------------------------
     def parse(self, options: GojiOptions) -> list[Stmt]:
         body = []
-        p = Parser(self._symtokens, options)
+        p = Parser(self._symtokens, self._all_lines, options)
         while p.has_tokens():
             symtoken = p.current_token()
             if not symtoken is None:
-                line_idx = symtoken.line - 1
-            st = parse_statement(p, self._all_lines[line_idx])
-            if not st is None:
-                body.append(st)
+                st = parse_statement(p, self.source_line(symtoken.line))
+                if not st is None:
+                    body.append(st)
         return body
 
 # ---------------------------------------------------------------------- 

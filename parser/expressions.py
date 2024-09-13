@@ -11,6 +11,7 @@ from parser.rules import (
 from parser.symbols import (
     symtoken_for_identifier,
     SymbolType,
+    SymToken,
 )
 
 from ast.expressions import (
@@ -21,21 +22,96 @@ from ast.expressions import (
     IdentifierExpr,
     AssignmentExpr,
     BinaryExpr,
+    FunctionExpr,
+    ParamsExpr,
 )
+
 
 from ast.interfaces import Expr
 
 from parser.parser import Parser
 
+def parse_identifier_expr(p: Parser) -> Union[IdentifierExpr, None]:
+    symtok = p.current_token()
+    if symtok is None:
+        print("parse_identifier_expr without advancing")
+        return None
+    if p.show_parsing:
+        print("parse_identifier_expr(%s)" % symtok)
+    if symtok.symtype == SymbolType.IDENTIFIER:
+        expr = cast(Expr, IdentifierExpr(symtok))
+    else:
+        expr = None
+    p.advance()
+    return expr
+
+def has_more_params(p: Parser) -> bool:
+    sym = p.current_token()
+    more_params = True
+    if sym is None:
+        more_params = False
+    if sym.symtype == SymbolType.RIGHT_PAREN:
+        more_params = False
+    if not more_params:
+        print("Exhausted params")
+    return more_params
+
+# Already seen and advanced 
+def parse_params_expr(p: Parser) -> Union[ParamsExpr, None]:
+    if p.show_parsing:
+        print("parse_params_expr()")
+    p.skip_one(SymbolType.LEFT_PAREN)
+
+    # parse 0 or more comma separated args (identifiers, or literals)
+    # return None if not a well-formed paramter list
+    params: list[IdentifierExpr] = []
+    while has_more_params(p):
+        expr = parse_identifier_expr(p)
+        if expr is None:
+            return None
+        symtok = p.current_token()
+        print("symtok is", symtok)
+        if symtok is None:
+           return None 
+        the_type = symtok.symtype
+        print("the_type is:", the_type)
+        params.append(expr)
+        if the_type == SymbolType.COMMA:
+            p.skip_one(SymbolType.COMMA)
+        elif the_type != SymbolType.RIGHT_PAREN:
+            return None
+
+    # return ParamsExpr containing the args.
+    p.skip_one(SymbolType.RIGHT_PAREN)
+    return ParamsExpr(params)
+
+def parse_fn_def(p: Parser, sym: SymToken) -> Union[FunctionExpr, None]:
+    if p.show_parsing:
+        print("parse_fn_def(%s)" % sym)
+    # rp = global_rule_provider
+    # operator_bp = rp.bp_for_token_type(operator.symtype)
+    p.advance() # makes LEFT_PAREN the current symtok
+    params_expr = parse_params_expr(p) # PH - was left_bp
+    if params_expr is None:
+        return None
+    print("PARAMS: %s" % params_expr)
+    p.skip_one(SymbolType.OP_ASSIGN)
+
+    body = parse_expr(p, BindingPower.DEFAULT_BP)
+    if body is None:
+        return None
+    return FunctionExpr(sym, params_expr, body)
+
 # Parser -> ast.Expr
 # and advances the parser position
 def parse_primary_expr(p: Parser) -> Union[Expr, None]:
-    if p.show_parsing:
-        print("parse_primary_expr()")
     symtok = p.current_token()
     if symtok is None:
         print("parse_primary_expr without advancing")
         return None
+    if p.show_parsing:
+        print("parse_primary_expr(%s)" % symtok)
+
     if symtok.symtype == SymbolType.LITERAL_INTEGER:
         expr = cast(Expr, IntegerExpr(symtok))
     elif symtok.symtype == SymbolType.LITERAL_FLOAT:
@@ -45,7 +121,22 @@ def parse_primary_expr(p: Parser) -> Union[Expr, None]:
     elif symtok.symtype == SymbolType.LITERAL_STRING:
         expr = StringExpr(symtok)
     elif symtok.symtype == SymbolType.IDENTIFIER:
-        expr = cast(Expr, IdentifierExpr(symtok))
+        nextsymtok = p.peek_next_token()
+        print("nextsymtok is ", nextsymtok)
+        if nextsymtok is None:
+            expr = cast(Expr, IdentifierExpr(symtok))
+        else:
+            the_type = nextsymtok.symtype
+            if the_type == SymbolType.LINE_END:
+                expr = cast(Expr, IdentifierExpr(symtok))
+            elif the_type == SymbolType.OP_ASSIGN:
+                expr = cast(Expr, IdentifierExpr(symtok))
+            elif the_type == SymbolType.LEFT_PAREN:
+                expr = parse_fn_def(p, symtok)
+                if expr is None:
+                    return None
+            else:
+                expr = cast(Expr, IdentifierExpr(symtok))
     else:
         expr = None
     p.advance()
@@ -53,12 +144,12 @@ def parse_primary_expr(p: Parser) -> Union[Expr, None]:
 
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 # and advances the parser position
-def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: Expr) -> Union[BinaryExpr, None]:
-    if p.show_parsing:
-        print("parse_binary_expr()")
+def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: BindingPower) -> Union[BinaryExpr, None]:
     operator = p.current_token()
     if operator is None:
         return None
+    if p.show_parsing:
+        print("parse_binary_expr(%s %s)" % (left_expr, operator))
     rp = global_rule_provider
     operator_bp = rp.bp_for_token_type(operator.symtype)
 
@@ -79,6 +170,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     if symtok is None:
         return None
 
+    print("token whose null rule will be sought: ", symtok)
     # Check if there is a NullDenoted handler for
     # this type of token
     rp = global_rule_provider
@@ -89,6 +181,8 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
             p.advance_to_sym(SymbolType.LINE_END)
         return None
 
+    print("null rule obtained: ", null_rule)
+
     # Use the null_rule to parse this as the left node
     # (which also will advance the parser pos)
     left_node = null_rule(p)
@@ -98,6 +192,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
         return None
 
     symtok = p.current_token()
+    print("Initial left_node: ", symtok)
     if symtok is None:
         return left_node
 
