@@ -37,25 +37,25 @@ class EnvItem:
         if not isinstance(self._expr, BaseExpr):
             return False
         item_sym = self._expr.exprsym
-        return item_sym.isstring()
+        return item_sym.is_string()
 
     def isinteger(self) -> bool:
         if not isinstance(self._expr, BaseExpr):
             return False
         item_sym = self._expr.exprsym
-        return item_sym.isinteger()
+        return item_sym.is_integer()
 
     def isfloat(self) -> bool:
         if not isinstance(self._expr, BaseExpr):
             return False
         item_sym = self._expr.exprsym
-        return item_sym.isfloat()
+        return item_sym.is_float()
 
     def isbool(self) -> bool:
         if not isinstance(self._expr, BaseExpr):
             return False
         item_sym = self._expr.exprsym
-        return item_sym.isbool()
+        return item_sym.is_bool()
 
     def isfunction(self) -> bool:
         return False
@@ -69,7 +69,7 @@ class EnvItem:
         if not isinstance(self._expr, BaseExpr):
             return False
         item_sym = self._expr.exprsym
-        return item_sym.isnil()
+        return item_sym.is_nil()
 
     def __str__(self) -> str:
         if self.isnil():

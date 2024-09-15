@@ -11,6 +11,12 @@ class BlockStmt(Stmt):
         else:
             first_stmt = self._stmts[0]
             return first_stmt.line
+    def stmt(self) -> None:
+        return None
+
+    @property
+    def some_name(self) -> None:
+        return None
 
     
 

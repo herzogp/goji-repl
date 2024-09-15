@@ -138,7 +138,7 @@ class FileParser:
 # 	[ ] SEMI_COLON
 # 	[ ] COLON
 # 	[ ] QUESTION
-# 	[ ] COMMA
+# 	[x] COMMA
 # 
 # Multi-Symbol Operations
 #   [ ] PLUS_PLUS
@@ -184,6 +184,7 @@ def pratt_parse_program(file_path: str, options: GojiOptions) -> tuple[list[Stmt
     if options.show_tokens:
         parseInfo.show_symtokens()
     parsed_result = parseInfo.parse(options)
-    print("parsing completed")
-    print("")
+    if options.show_parsing:
+        print("parsing completed")
+        print("")
     return (parsed_result, all_lines)

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, cast
 
 from ast.interfaces import Expr, Stmt
 
@@ -119,6 +119,15 @@ class ParamsExpr(Expr):
     def params(self) -> list[IdentifierExpr]:
         return self._params
 
+    @property
+    def count(self) -> list[IdentifierExpr]:
+        return len(self._params)
+
+    def param_at_index(self, idx) -> Union[None, IdentifierExpr]:
+        if (idx >= 0) and (idx < self.count):
+            return self._params[idx]
+        return None
+
     def __str__(self) -> str:
         all_params = [str(x) for x in self._params]
         str_params = ", ".join(all_params)
@@ -127,24 +136,28 @@ class ParamsExpr(Expr):
     def expr(self) -> None:
         return None
 
-class FunctionExpr(IdentifierExpr):
+class FunctionDefExpr(IdentifierExpr):
     def __init__(self, sym: SymToken, params: ParamsExpr, body: Stmt) -> None:
         super().__init__(sym)
         self._params = params
         self._body = body
 
     @property
-    def params(self) -> list[IdentifierExpr]:
+    def params(self) -> ParamsExpr:
         return self._params
 
     @property
     def body(self) -> Stmt:
         return self._body
 
-    def str(self) -> str:
-        all_params = [str(x) for x in self._params]
-        str_params = ", ".join(all_params)
-        return "FunctionExpr(%s %s)" % (self.name, str_params)
+    def __str__(self) -> str:
+        # all_params = [str(x) for x in self.params.params]
+        # str_params = ", ".join(all_params)
+        # return "FunctionExpr(NAME: %s ARGS:%s BODY:%s)" % (self.name, str_params, self.body)
+        all_param_names = [cast(str, x.name.symvalue) for x in self.params.params]
+        str_param_names = ", ".join(all_param_names)
+
+        return "FunctionDefExpr(%s(%s) -> body)" % (self.name.symvalue, str_param_names)
 
     def expr(self) -> None:
         return None

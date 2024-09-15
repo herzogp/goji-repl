@@ -11,6 +11,7 @@ from ast.expressions import (
     BoolExpr,
     StringExpr,
     BaseExpr,
+    FunctionDefExpr,
 )
 
 from parser.symbols import (
@@ -26,6 +27,7 @@ from ast.statements import (
 from runtime.env import (
     EnvItem,
     EnvTable,
+    nil_expr,
 )
 
 class NumericOperands:
@@ -103,6 +105,12 @@ def eval_expr(env: EnvTable, expr: Expr) -> Union[Expr, None]:
         return expr
     elif isinstance(expr, BoolExpr):
         return expr
+    elif isinstance(expr, FunctionDefExpr):
+        name_sym = expr.name
+        item_name = name_sym.as_str('_')
+        item = EnvItem(item_name, expr)
+        env.set_item(item)
+        return expr #nil_expr
     elif isinstance(expr, IdentifierExpr):
         name_sym = expr.name
         item_name = name_sym.as_str('_')

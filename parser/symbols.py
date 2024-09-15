@@ -161,30 +161,33 @@ class SymToken:
         return self._col
 
     def as_str(self, def_value: str) -> str:
-        if self.isstring() or self.isident():
+        if self.is_string() or self.is_ident():
             return cast(str, self._val)
         print("is not a string: ", self)
         return def_value
 
-    def isinteger(self) -> bool:
+    def is_integer(self) -> bool:
         return self._typ == SymbolType.LITERAL_INTEGER
 
-    def isfloat(self) -> bool:
+    def is_float(self) -> bool:
         return self._typ == SymbolType.LITERAL_FLOAT
 
-    def isbool(self) -> bool:
+    def is_bool(self) -> bool:
         return self._typ == SymbolType.LITERAL_BOOL
 
-    def isstring(self) -> bool:
+    def is_string(self) -> bool:
         return self._typ == SymbolType.LITERAL_STRING
 
-    def isident(self) -> bool:
+    def is_ident(self) -> bool:
         return self._typ == SymbolType.IDENTIFIER
 
-    def isinputend(self) -> bool:
+    def is_input_end(self) -> bool:
         return self._typ == SymbolType.INPUT_END
 
-    def isnil(self) -> bool:
+    def is_line_end(self) -> bool:
+        return self._typ == SymbolType.LINE_END
+
+    def is_nil(self) -> bool:
         return self._typ == SymbolType.LITERAL_NIL
 
 def symbolized(tokens) -> list[SymToken]:
