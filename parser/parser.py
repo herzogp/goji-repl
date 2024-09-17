@@ -8,6 +8,8 @@ from parser.symbols import (
     # symbolized,
 )
 
+from parser.rules import RuleProvider
+
 class Parser:
     def __init__(self, symtokens: list[SymToken], all_lines: list[str], options: GojiOptions) -> None:
         if options.show_tokens:
@@ -17,6 +19,12 @@ class Parser:
         self._ntx = len(symtokens)
         self._options = options
         self._all_lines = all_lines
+        self._lnx = len(all_lines)
+        self._rule_provider = RuleProvider()
+
+    @property
+    def rule_provider(self) -> RuleProvider:
+        return self._rule_provider
 
     @property
     def show_tokens(self) -> bool:
@@ -42,6 +50,12 @@ class Parser:
         if (idx < 0):
             return None
         return self._symtokens[idx]
+
+    def source_line(self, one_based_lno: int) -> str:
+        if (one_based_lno < 1) or (one_based_lno > self._lnx):
+            return '<line %d not found>' % one_based_lno
+        idx = one_based_lno - 1
+        return self._all_lines[idx]
 
     def peek_prev_token(self) -> Union[SymToken, None]:
         return self.token_at_index(self._pos - 1)

@@ -120,7 +120,7 @@ class ParamsExpr(Expr):
         return self._params
 
     @property
-    def count(self) -> list[IdentifierExpr]:
+    def count(self) -> int:
         return len(self._params)
 
     def param_at_index(self, idx) -> Union[None, IdentifierExpr]:

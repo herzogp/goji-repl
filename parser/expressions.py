@@ -36,28 +36,12 @@ from ast.interfaces import Expr
 
 from parser.parser import Parser
 
-COLOR_RED = "\033[0;31m"
-COLOR_GREEN = "\033[0;32m"
-COLOR_BLUE = "\033[0;34m"
-COLOR_CYAN = "\033[0;36m"
-
-COLOR_YELLOW = "\033[1;33m"
-COLOR_WHITE = "\033[1;37m"
-COLOR_ENDC = "\033[0m"
-
-def print_info(s: str) -> None:
-    print("%s%s%s" % (COLOR_BLUE, s, COLOR_ENDC))
-
-# An info that should be noticed
-def print_note(s: str) -> None:
-    print("%s%s%s" % (COLOR_WHITE, s, COLOR_ENDC))
-
-def print_warning(s: str) -> None:
-    print("%s%s%s" % (COLOR_YELLOW, s, COLOR_ENDC))
-
-def print_error(s: str) -> None:
-    print("%s%s%s" % (COLOR_RED, s, COLOR_ENDC))
-
+from logging import (
+    print_info,
+    print_note,
+    print_warning,
+    print_error,
+)
 
 def parse_identifier_expr(p: Parser) -> Union[IdentifierExpr, None]:
     if p.show_parsing:
@@ -161,8 +145,7 @@ def parse_fn_def(p: Parser, sym: SymToken) -> Union[Expr, None]:
     if p.show_parsing:
         print_note("")
         print_note(">>> [PFD] parse_fn_def(%s)" % sym.symvalue)
-    # rp = global_rule_provider
-    # operator_bp = rp.bp_for_token_type(operator.symtype)
+
     p.advance() # makes LEFT_PAREN the current symtok
     params_expr = parse_params_expr(p) # PH - was left_bp
     if params_expr is None:
@@ -257,7 +240,7 @@ def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: BindingPower) -> Unio
         return None
     if p.show_parsing:
         print("parse_binary_expr(%s %s)" % (left_expr, operator))
-    rp = global_rule_provider
+    rp = p.rule_provider
     operator_bp = rp.bp_for_token_type(operator.symtype)
 
     p.advance()
@@ -284,7 +267,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
     # Check if there is a NullDenoted handler for
     # this type of token
-    rp = global_rule_provider
+    rp = p.rule_provider
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule is None:
         if not symtok.is_input_end():
@@ -373,9 +356,7 @@ def parse_grouping_expr(p: Parser) -> Union[Expr, None]:
     p.skip_one(SymbolType.RIGHT_PAREN)
     return grouped_expr
 
-def create_rule_provider() -> RuleProvider:
-
-    rule_provider = RuleProvider()
+def init_expr_rules(rp: RuleProvider) -> None:
 
     # Literals & Symbols
     all_literals = [
@@ -385,21 +366,18 @@ def create_rule_provider() -> RuleProvider:
         SymbolType.LITERAL_BOOL,
         SymbolType.IDENTIFIER,
     ]
+
     bp = BindingPower.PRIMARY
     for x in all_literals:
-        rule_provider.register_rule(NullRule(bp, x, parse_primary_expr))
+        rp.register_rule(NullRule(bp, x, parse_primary_expr))
 
     # Math Operations
-    rule_provider.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
-    rule_provider.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
+    rp.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
+    rp.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
 
     # Assignment
-    rule_provider.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
+    rp.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
 
     # Grouping and Scope
-    rule_provider.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
-
-    return rule_provider
-
-global_rule_provider = create_rule_provider()
+    rp.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
 

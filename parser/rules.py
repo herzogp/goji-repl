@@ -1,12 +1,10 @@
 
-from typing import Union, Callable, cast
+from typing import Union, Callable, cast, Any
 from enum import Enum
 
 from ast.interfaces import Expr, Stmt
 
 from parser.symbols import SymbolType
-
-from parser.driver import Parser
 
 class BindingPower(Enum):
 	DEFAULT_BP = 0
@@ -26,13 +24,18 @@ class HandlerType(Enum):
     LEFT_DENOTED = 1
     STATEMENT_DENOTED = 2
 
-NullHandler = Callable[[Parser], Expr]
-LeftHandler = Callable[[Parser, Expr, BindingPower], Expr]
-StmtHandler = Callable[[Parser], Stmt]
+#----------------------------------------------------------------------
+# Circular Reference mitigated by using 'Any' instead of 'Parser'
+#----------------------------------------------------------------------
+# from parser.driver import Parser
+#
+# NullHandler = Callable[[Parser], Expr]
+# LeftHandler = Callable[[Parser, Expr, BindingPower], Expr]
+# StmtHandler = Callable[[Parser], Stmt]
+NullHandler = Callable[[Any], Expr]
+LeftHandler = Callable[[Any, Expr, BindingPower], Expr]
+StmtHandler = Callable[[Any], Stmt]
 
-# null_handler: Parser -> ast.Expr
-# left_handler  Parser -> ast.Expr -> bp BindingPower -> ast.Expr
-# statement_handler Parser -> ast.Stmt
 RuleHandler = Union[NullHandler, LeftHandler, StmtHandler]
 
 class Rule:

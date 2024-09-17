@@ -16,6 +16,7 @@ from parser.symbols import (
 )
 
 from parser.expressions import (
+    init_expr_rules,
     parse_primary_expr,
     parse_binary_expr,
     parse_assignment_expr,
@@ -23,6 +24,7 @@ from parser.expressions import (
 )
 
 from parser.statements import (
+    init_stmt_rules,
     parse_statement,
 )
 
@@ -90,10 +92,14 @@ class FileParser:
     def parse(self, options: GojiOptions) -> list[Stmt]:
         body = []
         p = Parser(self._symtokens, self._all_lines, options)
+        init_expr_rules(p.rule_provider)
+        init_stmt_rules(p.rule_provider)
+
         while p.has_tokens():
             symtoken = p.current_token()
             if not symtoken is None:
-                st = parse_statement(p, self.source_line(symtoken.line))
+                #st = parse_statement(p, self.source_line(symtoken.line))
+                st = parse_statement(p)
                 if not st is None:
                     body.append(st)
         return body
