@@ -43,6 +43,7 @@ from logging import (
     print_error,
 )
 
+
 def parse_identifier_expr(p: Parser) -> Union[IdentifierExpr, None]:
     if p.show_parsing:
         print_info("[PIE] parse_identifier_expr()")
@@ -71,8 +72,8 @@ def parse_identifier_expr(p: Parser) -> Union[IdentifierExpr, None]:
     if p.show_parsing:
         print("[PIE] follow_up_token: %s" % p.current_token())
 
-
     return cast(IdentifierExpr, expr)
+
 
 def has_more_params(p: Parser) -> bool:
     sym = p.current_token()
@@ -86,7 +87,8 @@ def has_more_params(p: Parser) -> bool:
 
     return more_params
 
-# Positioned at zero or more LINE_END's 
+
+# Positioned at zero or more LINE_END's
 # followed by a LEFT_PAREN
 def parse_params_expr(p: Parser) -> Union[ParamsExpr, None]:
     if p.show_parsing:
@@ -106,7 +108,7 @@ def parse_params_expr(p: Parser) -> Union[ParamsExpr, None]:
             return None
         symtok = p.current_token()
         if symtok is None:
-           return None 
+            return None
 
         params.append(expr)
 
@@ -118,7 +120,7 @@ def parse_params_expr(p: Parser) -> Union[ParamsExpr, None]:
         if p.show_parsing:
             print_note("    [PPE] updated symtok is %s" % symtok)
         if symtok is None:
-           return None 
+            return None
         the_type = symtok.symtype
         if p.show_parsing:
             print_note("    [PPE] updated the_type is: %s" % the_type)
@@ -130,14 +132,21 @@ def parse_params_expr(p: Parser) -> Union[ParamsExpr, None]:
 
     # return ParamsExpr containing the args.
     if p.show_parsing:
-        print_note("    [PPE] wrapping up parse_params_expr.  current_token => %s" % p.current_token())
+        print_note(
+            "    [PPE] wrapping up parse_params_expr.  current_token => %s"
+            % p.current_token()
+        )
 
     p.skip_over(SymbolType.RIGHT_PAREN)
 
     if p.show_parsing:
-        print_note("    [PPE] after skipping the RIGHT_PAREN.  current_token => %s" % p.current_token())
+        print_note(
+            "    [PPE] after skipping the RIGHT_PAREN.  current_token => %s"
+            % p.current_token()
+        )
 
     return ParamsExpr(params)
+
 
 # nextsym should be LEFT_PAREN
 # sym should be name of function being defined
@@ -146,8 +155,8 @@ def parse_fn_def(p: Parser, sym: SymToken) -> Union[Expr, None]:
         print_note("")
         print_note(">>> [PFD] parse_fn_def(%s)" % sym.symvalue)
 
-    p.advance() # makes LEFT_PAREN the current symtok
-    params_expr = parse_params_expr(p) # PH - was left_bp
+    p.advance()  # makes LEFT_PAREN the current symtok
+    params_expr = parse_params_expr(p)  # PH - was left_bp
     if params_expr is None:
         return None
     if p.show_parsing:
@@ -165,11 +174,11 @@ def parse_fn_def(p: Parser, sym: SymToken) -> Union[Expr, None]:
         return None
     block_stmt = BlockStmt(ExpressionStmt(body))
 
-
     # HACK: Consumed a LINE_END - need to restore it
     p.backup()
 
     return FunctionDefExpr(sym, params_expr, block_stmt)
+
 
 def is_function_def(p: Parser) -> bool:
     next_symtok = p.peek_many(SymbolType.LINE_END)
@@ -177,6 +186,7 @@ def is_function_def(p: Parser) -> bool:
         return False
     next_type = next_symtok.symtype
     return next_type == SymbolType.LEFT_PAREN
+
 
 # Parser -> ast.Expr
 # and advances the parser position
@@ -232,9 +242,12 @@ def parse_primary_expr(p: Parser) -> Union[Expr, None]:
     p.advance()
     return expr
 
+
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 # and advances the parser position
-def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: BindingPower) -> Union[BinaryExpr, None]:
+def parse_binary_expr(
+    p: Parser, left_expr: Expr, left_bp: BindingPower
+) -> Union[BinaryExpr, None]:
     operator = p.current_token()
     if operator is None:
         return None
@@ -244,7 +257,7 @@ def parse_binary_expr(p: Parser, left_expr: Expr, left_bp: BindingPower) -> Unio
     operator_bp = rp.bp_for_token_type(operator.symtype)
 
     p.advance()
-    right_expr = parse_expr(p, operator_bp) # PH - was left_bp
+    right_expr = parse_expr(p, operator_bp)  # PH - was left_bp
     if right_expr is None:
         print("Unable to parse_expr() to deliver right_expr")
         return None
@@ -271,7 +284,9 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     null_rule = rp.null_rule_for_token_type(symtok.symtype)
     if null_rule is None:
         if not symtok.is_input_end():
-            print_warning("ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok)
+            print_warning(
+                "ERROR: Expected a symbol with a NullDenoted handler - %s" % symtok
+            )
             p.advance_to_sym(SymbolType.LINE_END)
         return None
 
@@ -282,7 +297,10 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     # (which also will advance the parser pos)
     left_node = null_rule(p)
     if left_node is None:
-        print_warning("ERROR: Expected a symbol after applying the NullDenoted handler - %s" % p.current_token())
+        print_warning(
+            "ERROR: Expected a symbol after applying the NullDenoted handler - %s"
+            % p.current_token()
+        )
         p.advance_to_sym(SymbolType.LINE_END)
         return None
 
@@ -290,7 +308,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     if p.show_parsing:
         print_info("Initial left_node (obtained via null_rule): %s" % symtok)
 
-    if symtok is None: 
+    if symtok is None:
         print("symtok not even provided")
         return left_node
 
@@ -302,22 +320,27 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
     # Fast-forward to the right, within this expr to find the
     # operator with the highest binding power seen so far
-    # for something like "10 + 4" this will fast forward to the 4, 
-    # but 
+    # for something like "10 + 4" this will fast forward to the 4,
+    # but
     while next_bp != None and (next_bp.value > overall_bp.value):
 
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule is None:
-            print_error("ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok)
+            print_error(
+                "ERROR: Expected a symbol with a LeftDenoted handler - %s" % symtok
+            )
             p.advance_to_sym(SymbolType.LINE_END)
             return None
 
-        # Use the left_rule to parse this as the 
+        # Use the left_rule to parse this as the
         # new left node (which incorporates the previous left node)
         # (which also will advance the parser pos)
         left_node = left_rule(p, left_node, overall_bp)
         if left_node is None:
-            print_error("ERROR: Expected a symbol after applying the LeftDenoted handler - %s" % p.current_token())
+            print_error(
+                "ERROR: Expected a symbol after applying the LeftDenoted handler - %s"
+                % p.current_token()
+            )
             p.advance_to_sym(SymbolType.LINE_END)
             return None
 
@@ -330,8 +353,11 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
 
     return left_node
 
+
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
-def parse_assignment_expr(p: Parser, left_expr: IdentifierExpr, bp: BindingPower) -> Union[AssignmentExpr, None]:
+def parse_assignment_expr(
+    p: Parser, left_expr: IdentifierExpr, bp: BindingPower
+) -> Union[AssignmentExpr, None]:
     if p.show_parsing:
         print("parse_assignment_expr()")
     p.advance()
@@ -347,6 +373,7 @@ def parse_assignment_expr(p: Parser, left_expr: IdentifierExpr, bp: BindingPower
     expr_node = AssignmentExpr(id_name_symtoken, rhs)
     return expr_node
 
+
 # Parser -> ast.Expr
 def parse_grouping_expr(p: Parser) -> Union[Expr, None]:
     p.skip_one(SymbolType.LEFT_PAREN)
@@ -355,6 +382,7 @@ def parse_grouping_expr(p: Parser) -> Union[Expr, None]:
         return None
     p.skip_one(SymbolType.RIGHT_PAREN)
     return grouped_expr
+
 
 def init_expr_rules(rp: RuleProvider) -> None:
 
@@ -372,12 +400,19 @@ def init_expr_rules(rp: RuleProvider) -> None:
         rp.register_rule(NullRule(bp, x, parse_primary_expr))
 
     # Math Operations
-    rp.register_rule(LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr))
-    rp.register_rule(LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr))
+    rp.register_rule(
+        LeftRule(BindingPower.ADDITIVE, SymbolType.OP_ADD, parse_binary_expr)
+    )
+    rp.register_rule(
+        LeftRule(BindingPower.MULTIPLICATIVE, SymbolType.OP_MULTIPLY, parse_binary_expr)
+    )
 
     # Assignment
-    rp.register_rule(LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr))
+    rp.register_rule(
+        LeftRule(BindingPower.ASSIGNMENT, SymbolType.OP_ASSIGN, parse_assignment_expr)
+    )
 
     # Grouping and Scope
-    rp.register_rule(NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr))
-
+    rp.register_rule(
+        NullRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_PAREN, parse_grouping_expr)
+    )

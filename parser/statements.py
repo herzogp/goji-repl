@@ -31,6 +31,7 @@ from parser.driver import Parser
 
 from parser.symbols import SymbolType
 
+
 # Parser -> ast.Stmt
 def parse_statement(p: Parser) -> Union[Stmt, None]:
     symtok = p.current_token()
@@ -41,15 +42,16 @@ def parse_statement(p: Parser) -> Union[Stmt, None]:
     if stmt_rule is None:
         line_number = symtok.line
         expression = parse_expr(p, BindingPower.DEFAULT_BP)
-        p.skip_one(SymbolType.LINE_END)    
-        if (expression is None): # or (symtok.isinputend()):
+        p.skip_one(SymbolType.LINE_END)
+        if expression is None:  # or (symtok.isinputend()):
             if line_number > 0:
                 print("[%2d] %s" % (line_number, p.source_line(line_number)))
                 print("")
             return None
-        # p.skip_one(SymbolType.LINE_END)    
+        # p.skip_one(SymbolType.LINE_END)
         return ExpressionStmt(expression)
     return stmt_rule(p)
+
 
 def parse_block_stmt(p: Parser) -> Union[Stmt, None]:
     p.skip_one(SymbolType.LEFT_BRACE)
@@ -58,7 +60,7 @@ def parse_block_stmt(p: Parser) -> Union[Stmt, None]:
     while p.has_tokens():
         symtoken = p.current_token()
         if symtoken is None:
-            return None # unexpected end of body
+            return None  # unexpected end of body
         if symtoken != SymbolType.RIGHT_BRACE:
             st = parse_statement(p)
             if st is None:
@@ -71,6 +73,8 @@ def parse_block_stmt(p: Parser) -> Union[Stmt, None]:
     p.skip_over(SymbolType.RIGHT_BRACE)
     return BlockStmt(body)
 
-def init_stmt_rules(rp: RuleProvider) -> None:
-    rp.register_rule(StatementRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_BRACE, parse_block_stmt))
 
+def init_stmt_rules(rp: RuleProvider) -> None:
+    rp.register_rule(
+        StatementRule(BindingPower.DEFAULT_BP, SymbolType.LEFT_BRACE, parse_block_stmt)
+    )

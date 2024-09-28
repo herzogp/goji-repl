@@ -20,4 +20,3 @@ class GojiOptions:
     @property
     def program_file(self) -> str:
         return self._program_file
-

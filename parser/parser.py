@@ -10,8 +10,11 @@ from parser.symbols import (
 
 from parser.rules import RuleProvider
 
+
 class Parser:
-    def __init__(self, symtokens: list[SymToken], all_lines: list[str], options: GojiOptions) -> None:
+    def __init__(
+        self, symtokens: list[SymToken], all_lines: list[str], options: GojiOptions
+    ) -> None:
         if options.show_tokens:
             print("initializing parser with %d tokens" % len(symtokens))
         self._symtokens = symtokens
@@ -47,13 +50,13 @@ class Parser:
     def token_at_index(self, idx) -> Union[SymToken, None]:
         if not self.has_tokens():
             return None
-        if (idx < 0):
+        if idx < 0:
             return None
         return self._symtokens[idx]
 
     def source_line(self, one_based_lno: int) -> str:
         if (one_based_lno < 1) or (one_based_lno > self._lnx):
-            return '<line %d not found>' % one_based_lno
+            return "<line %d not found>" % one_based_lno
         idx = one_based_lno - 1
         return self._all_lines[idx]
 
@@ -63,18 +66,20 @@ class Parser:
     def peek_next_token(self) -> Union[SymToken, None]:
         return self.token_at_index(self._pos + 1)
 
-    def skip_one(self, type_to_skip: SymbolType, err_msg='') -> None:
+    def skip_one(self, type_to_skip: SymbolType, err_msg="") -> None:
         if self.show_parsing:
-            print("[S1] ENTER skip_one(%s) - curent_pos: %d" % (type_to_skip, self._pos))
+            print(
+                "[S1] ENTER skip_one(%s) - curent_pos: %d" % (type_to_skip, self._pos)
+            )
         symtok = self.current_token()
         if symtok is None:
-            if err_msg == '':
+            if err_msg == "":
                 err_msg = "[S1] End of Tokens - unable to skip_one()"
             raise Exception(err_msg)
         elif symtok.is_input_end():
             self.advance()
         elif symtok.symtype != type_to_skip:
-            if err_msg == '':
+            if err_msg == "":
                 err_msg = "[S1] Expected %s - saw %s" % (type_to_skip.name, symtok)
             raise Exception(err_msg)
         if self.show_parsing:
@@ -108,9 +113,11 @@ class Parser:
             print("[SM] skip_many advanced to %s" % self.current_token())
         return
 
-    def skip_over(self, type_to_skip: SymbolType, err_msg='') -> None:
+    def skip_over(self, type_to_skip: SymbolType, err_msg="") -> None:
         if self.show_parsing:
-            print("[SV] ENTER skip_over(%s) - curent_pos: %d" % (type_to_skip, self._pos))
+            print(
+                "[SV] ENTER skip_over(%s) - curent_pos: %d" % (type_to_skip, self._pos)
+            )
         skipping = True
         if type_to_skip == SymbolType.LINE_END:
             skipping = False
@@ -118,7 +125,10 @@ class Parser:
         if skipping:
             self.skip_many(SymbolType.LINE_END)
         if self.show_parsing:
-            print("[SV] skip_over(%s) - after possible skipping, curent_pos: %d" % (type_to_skip, self._pos))
+            print(
+                "[SV] skip_over(%s) - after possible skipping, curent_pos: %d"
+                % (type_to_skip, self._pos)
+            )
             print("[SV] skip_over asking [S1] skip_one() to match next: ", type_to_skip)
         self.skip_one(type_to_skip, err_msg)
 

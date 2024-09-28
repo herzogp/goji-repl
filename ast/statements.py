@@ -1,5 +1,6 @@
 from ast.interfaces import Expr, Stmt
 
+
 class BlockStmt(Stmt):
     def __init__(self, stmts) -> None:
         self._stmts = stmts
@@ -19,7 +20,6 @@ class BlockStmt(Stmt):
     def some_name(self) -> None:
         return None
 
-    
 
 class ExpressionStmt(Stmt):
     def __init__(self, expression: Expr) -> None:

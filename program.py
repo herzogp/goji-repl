@@ -27,8 +27,10 @@ from parser.symbols import (
     symtoken_for_identifier,
 )
 
+
 class EngineVersion(Enum):
     V0_2_0 = 10
+
 
 def run_program(options: GojiOptions) -> None:
     program_file = options.program_file
@@ -39,20 +41,25 @@ def run_program(options: GojiOptions) -> None:
     # Add the engine version
     name_val = EngineVersion.V0_2_0.name
     # builtin = EnvItem('engineVersion-name', make_atom_node(Token.QTEXT, EngineVersion.V0_2_0.name))
-    builtin = EnvItem('engineVersion-name', StringExpr(symtoken_for_text(EngineVersion.V0_2_0.name)))
+    builtin = EnvItem(
+        "engineVersion-name", StringExpr(symtoken_for_text(EngineVersion.V0_2_0.name))
+    )
     program_env.set_item(builtin)
 
     this_val = EngineVersion.V0_2_0.value
-    builtin = EnvItem('engineVersion-id', IntegerExpr(symtoken_for_numeric(str(EngineVersion.V0_2_0.value))))
+    builtin = EnvItem(
+        "engineVersion-id",
+        IntegerExpr(symtoken_for_numeric(str(EngineVersion.V0_2_0.value))),
+    )
     program_env.set_item(builtin)
 
-    builtin = EnvItem('seven_eleven', IntegerExpr(symtoken_for_numeric(str(711))))
+    builtin = EnvItem("seven_eleven", IntegerExpr(symtoken_for_numeric(str(711))))
     program_env.set_item(builtin)
 
-    builtin = EnvItem('true', BoolExpr(symtoken_for_identifier('true')))
+    builtin = EnvItem("true", BoolExpr(symtoken_for_identifier("true")))
     program_env.set_item(builtin)
-    
-    builtin = EnvItem('false', BoolExpr(symtoken_for_identifier('false')))
+
+    builtin = EnvItem("false", BoolExpr(symtoken_for_identifier("false")))
     program_env.set_item(builtin)
 
     # parse and show/eval AST
@@ -66,7 +73,7 @@ def run_program(options: GojiOptions) -> None:
         for stmt in all_statements:
             lno = stmt.line
             print("[%2d] %s" % (lno, all_lines[lno - 1]))
-            result = eval_stmt(program_env, stmt) 
+            result = eval_stmt(program_env, stmt)
             if result is None:
                 print("==> Runtime Error")
             else:
@@ -76,4 +83,3 @@ def run_program(options: GojiOptions) -> None:
     # show ending environment
     print("\nGoji Ending Environment:")
     program_env.show()
-

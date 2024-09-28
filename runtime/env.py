@@ -12,12 +12,12 @@ from parser.symbols import (
     nil_symtoken,
 )
 
+
 # EnvItem is a name + BaseExpr
 class EnvItem:
     def __init__(self, name: str, expr: Expr) -> None:
         self._name = name
         self._expr = expr
-
 
     @property
     def name(self) -> str:
@@ -60,7 +60,7 @@ class EnvItem:
     def isfunction(self) -> bool:
         return False
 
-    def clone(self): # -> EnvItem:
+    def clone(self):  # -> EnvItem:
         new_item = EnvItem(self._name, self._expr)
         return new_item
 
@@ -73,16 +73,18 @@ class EnvItem:
 
     def __str__(self) -> str:
         if self.isnil():
-            return 'nil'
-        return '%s: %s' % (self._name, self._expr)
+            return "nil"
+        return "%s: %s" % (self._name, self._expr)
+
 
 nil_expr = NilExpr(nil_symtoken)
-nil = EnvItem('nil', nil_expr)
+nil = EnvItem("nil", nil_expr)
+
 
 class EnvTable:
     def __init__(self, parent_env: Union[EnvTable, None] = None) -> None:
         self.parent = parent_env
-        self.table: list[EnvItem] = [] # could be a HashMap soon
+        self.table: list[EnvItem] = []  # could be a HashMap soon
         # if not self.parent is None:
         #     self.version = self.parent.version
 
@@ -107,7 +109,7 @@ class EnvTable:
         self.table.append(new_item)
 
     def hasTopLevelValue(self, item_name: str) -> bool:
-        if item_name == 'nil':
+        if item_name == "nil":
             return True
         for old_item in self.table:
             if old_item.name == item_name:
@@ -115,7 +117,7 @@ class EnvTable:
         return False
 
     def get_item(self, item_name: str) -> Union[EnvItem, None]:
-        if item_name == 'nil':
+        if item_name == "nil":
             return nil
         for old_item in self.table:
             if old_item.name == item_name:
@@ -153,10 +155,10 @@ class EnvTable:
     def get_text(self, item_name: str) -> str:
         env_item = self.get_item(item_name)
         if env_item is None:
-            return "" 
+            return ""
         if env_item.isstring():
             return cast(str, env_item.value)
-        return "" 
+        return ""
 
     def show(self) -> None:
         for item in self.table:

@@ -30,6 +30,7 @@ from runtime.env import (
     nil_expr,
 )
 
+
 class NumericOperands:
     def __init__(self, lhs: BaseExpr, rhs: BaseExpr) -> None:
         leftval = lhs.exprvalue
@@ -87,13 +88,14 @@ class NumericOperands:
     def right_int(self) -> int:
         return self._right_int
 
+
 def eval_expr(env: EnvTable, expr: Expr) -> Union[Expr, None]:
     if isinstance(expr, AssignmentExpr):
         result = eval_expr(env, expr.rhs)
         if result is None:
             return None
         ident_sym = expr.ident
-        item_name = ident_sym.as_str('_')
+        item_name = ident_sym.as_str("_")
         item = EnvItem(item_name, result)
         env.set_item(item)
         return result
@@ -107,13 +109,13 @@ def eval_expr(env: EnvTable, expr: Expr) -> Union[Expr, None]:
         return expr
     elif isinstance(expr, FunctionDefExpr):
         name_sym = expr.name
-        item_name = name_sym.as_str('_')
+        item_name = name_sym.as_str("_")
         item = EnvItem(item_name, expr)
         env.set_item(item)
-        return expr #nil_expr
+        return expr  # nil_expr
     elif isinstance(expr, IdentifierExpr):
         name_sym = expr.name
-        item_name = name_sym.as_str('_')
+        item_name = name_sym.as_str("_")
         maybe_item = env.get_item(item_name)
         if maybe_item is None:
             return None
@@ -144,6 +146,7 @@ def add_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
         print("Operands not supported: %s and %s" % (lhs, rhs))
         return None
 
+
 def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
     operands = NumericOperands(lhs, rhs)
     if not operands.are_valid:
@@ -161,6 +164,7 @@ def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
     else:
         print("Operands not supported: %s and %s" % (lhs, rhs))
         return None
+
 
 def eval_binary_expr(env: EnvTable, expr: BinaryExpr) -> Union[Expr, None]:
     operator = expr.operator
@@ -183,7 +187,8 @@ def eval_binary_expr(env: EnvTable, expr: BinaryExpr) -> Union[Expr, None]:
     else:
         print("Unexpected operator: %s" % opsym.name)
         return None
-    
+
+
 def eval_other(env: EnvTable, stmt: Stmt) -> None:
     stmt_line = 0
     print("Evaluating [%2d] %s" % (stmt_line, stmt))

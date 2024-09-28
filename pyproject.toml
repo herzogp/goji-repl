@@ -1,0 +1,40 @@
+[project]
+name = "goji-repl-sdk"
+version = "0.1.0"
+description = "REPL for Goji"
+dependencies = [
+    # "whatever",
+]
+
+[tool.black]
+verbose = true
+
+[tool.mypy]
+files = "*.py, runtime, ast, parser, tokenizer"
+
+[tool.pylint.messages_control]
+disable = "C0114,C0115,C0116"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "Cython"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+# always "message text" t t f t f 
+# always = "assertions:cmd_always"
+
+# sometimes "message text" t t f t f 
+# sometimes = "assertions:cmd_sometimes"
+
+# addx 10 17
+# addx = "assertions:add"
+
+# subx 100 31
+# subx = "assertions:sub"
+
+# [tool.pydeploy]
+# exclude_libs = []
+

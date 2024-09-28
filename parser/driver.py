@@ -30,8 +30,11 @@ from parser.statements import (
 
 from ast.interfaces import Stmt
 
+
 class FileParser:
-    def __init__(self, filename: str, tokens: list[TokenItem], all_lines: list[str]) -> None:
+    def __init__(
+        self, filename: str, tokens: list[TokenItem], all_lines: list[str]
+    ) -> None:
         self._filename = filename
         self._line = 0
         self._symtokens = symbolized(tokens)
@@ -68,12 +71,12 @@ class FileParser:
     def source_line(self, one_based_lno: int) -> str:
         idx = one_based_lno - 1
         if idx < 0 or idx >= self._ntx:
-            return '<line %d not found>' % one_based_lno
+            return "<line %d not found>" % one_based_lno
         return self._all_lines[idx]
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # Top-level function
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     # DoParse: tokens[] -> ast.BlockStatement
     #
     # 0. declare Body ast.Statement[] # empty list
@@ -88,7 +91,7 @@ class FileParser:
     #
     # 4. return st.BlockStatement(body)
     # p.parse_stmt()
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def parse(self, options: GojiOptions) -> list[Stmt]:
         body = []
         p = Parser(self._symtokens, self._all_lines, options)
@@ -98,13 +101,14 @@ class FileParser:
         while p.has_tokens():
             symtoken = p.current_token()
             if not symtoken is None:
-                #st = parse_statement(p, self.source_line(symtoken.line))
+                # st = parse_statement(p, self.source_line(symtoken.line))
                 st = parse_statement(p)
                 if not st is None:
                     body.append(st)
         return body
 
-# ---------------------------------------------------------------------- 
+
+# ----------------------------------------------------------------------
 # Literals
 # 	[ ] NULL
 # 	[x] TRUE
@@ -112,7 +116,7 @@ class FileParser:
 # 	[x] NUMBER
 # 	[x] STRING
 # 	[x] IDENTIFIER
-# 
+#
 # Grouping & Scope
 # 	[ ] EOF
 # 	[x] OPEN_BRACKET
@@ -121,10 +125,10 @@ class FileParser:
 # 	[x] CLOSE_CURLY
 # 	[x] OPEN_PAREN
 # 	[x] CLOSE_PAREN
-# 
+#
 # Statements
 # 	[x] ASSIGNMENT
-# 
+#
 # Conditional
 # 	[ ] EQUALS
 # 	[ ] NOT_EQUALS
@@ -132,12 +136,12 @@ class FileParser:
 # 	[ ] LESS_EQUALS
 # 	[ ] GREATER
 # 	[ ] GREATER_EQUALS
-# 
+#
 # Logical
 # 	[ ] NOT
 # 	[ ] OR
 # 	[ ] AND
-# 
+#
 # Symbolic Operations
 # 	[ ] DOT
 # 	[ ] DOT_DOT
@@ -145,21 +149,21 @@ class FileParser:
 # 	[ ] COLON
 # 	[ ] QUESTION
 # 	[x] COMMA
-# 
+#
 # Multi-Symbol Operations
 #   [ ] PLUS_PLUS
 #   [ ] MINUS_MINUS
 #   [ ] PLUS_EQUALS
 #   [ ] MINUS_EQUALS
 #   [ ] NULLISH_ASSIGNMENT # ??=
-# 
+#
 # Math Ops
 #   [x] PLUS
 #   [ ] DASH
 #   [ ] SLASH
 #   [x] STAR
 #   [ ] PERCENT
-# 
+#
 # Reserved Keywords
 # 	[ ] LET
 # 	[ ] CONST
@@ -176,12 +180,14 @@ class FileParser:
 # 	[ ] EXPORT
 # 	[ ] TYPEOF
 # 	[ ] IN
-# 
+#
 # Misc
 # 	[ ] NUM_TOKENS
 
 
-def pratt_parse_program(file_path: str, options: GojiOptions) -> tuple[list[Stmt], list[str]]:
+def pratt_parse_program(
+    file_path: str, options: GojiOptions
+) -> tuple[list[Stmt], list[str]]:
     tokens, all_lines = tokenize_program(file_path)
     tk_count = len(tokens)
     if tk_count > 0 and options.show_tokens:

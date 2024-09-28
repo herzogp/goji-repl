@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Stmt(ABC):
     @abstractmethod
     def stmt(self) -> None:
@@ -14,6 +15,7 @@ class Stmt(ABC):
     @abstractmethod
     def line(self) -> int:
         return 0
+
 
 class Expr(ABC):
     @abstractmethod

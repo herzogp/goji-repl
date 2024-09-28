@@ -4,28 +4,30 @@ from enum import Enum
 
 from tokenizer.tools import lines_to_process
 
+
 class Token(Enum):
-    INPUT_END = 0 # Unexpected lexical finding
+    INPUT_END = 0  # Unexpected lexical finding
 
     # List
-    LIST_BEGIN = 1 # '('
-    LIST_END = 2 # ')'
+    LIST_BEGIN = 1  # '('
+    LIST_END = 2  # ')'
 
     # plain text
-    TEXT = 3 
+    TEXT = 3
 
-     # Quoted text
+    # Quoted text
     QTEXT = 4
 
     # Digits '0', '1',  ..., '9'', '.'
-    NUMERIC = 5 
-    
-    # any of "!@#$%^&*-+=[]{};:|\\?><,./" 
-    # Must not be the lead character for a TEXT, QTEXT, NUMBER
-    SYMBOL = 6 
+    NUMERIC = 5
 
-    # Source 
-    LINE_END = 7 # ''
+    # any of "!@#$%^&*-+=[]{};:|\\?><,./"
+    # Must not be the lead character for a TEXT, QTEXT, NUMBER
+    SYMBOL = 6
+
+    # Source
+    LINE_END = 7  # ''
+
 
 # ------------------------------------------------------------
 # TokenItem {
@@ -34,11 +36,11 @@ class Token(Enum):
 # }
 # ------------------------------------------------------------
 class TokenItem:
-    def __init__(self, tk, ch=''):
+    def __init__(self, tk, ch=""):
         self.t = tk
         self.v = ch
-        self._lno  = 0
-        self._col  = 0
+        self._lno = 0
+        self._col = 0
 
     def __str__(self):
         name = self.t.name
@@ -46,7 +48,7 @@ class TokenItem:
         body = name
         if self.has_value():
             body = "%s(%s)" % (name, val)
-        
+
         if self._lno == 0:
             return body
         line_info = "[%d:%d]" % (self._lno, self._col)
@@ -66,14 +68,16 @@ class TokenItem:
         return self._col
 
     def has_value(self):
-        return self.t == Token.TEXT \
-            or self.t == Token.QTEXT \
-            or self.t == Token.SYMBOL \
+        return (
+            self.t == Token.TEXT
+            or self.t == Token.QTEXT
+            or self.t == Token.SYMBOL
             or self.t == Token.NUMERIC
+        )
 
     def is_numeric(self):
         return self.t == Token.NUMERIC
-    
+
     def is_text(self):
         return self.t == Token.TEXT
 
@@ -109,16 +113,21 @@ class TokenItem:
         else:
             return False
 
+
 def tokenitem_for_numeric(val):
     return TokenItem(Token.NUMERIC, str(val))
+
 
 def tokenitem_for_text(val):
     return TokenItem(Token.QTEXT, str(val))
 
+
 def tokenitem_for_identifier(val):
     return TokenItem(Token.TEXT, str(val))
 
+
 nil_token_item = TokenItem(Token.SYMBOL)
+
 
 class ScanContext(Enum):
     IN_NOTHING = 0
@@ -127,6 +136,7 @@ class ScanContext(Enum):
     IN_TEXT = 3
     IN_NUMERIC = 4
     IN_SYMBOL = 5
+
 
 # ----------------------------------------------------------------------
 # Tokenizer {
@@ -140,10 +150,10 @@ class Tokenizer:
 
     def __init__(self):
         self.tk_type = Token.INPUT_END
-        self.text = ''
+        self.text = ""
         self._lno = 0
         self._col = 0
-        self.tokens = [] # TokenItem[]
+        self.tokens = []  # TokenItem[]
         self.state = ScanContext.IN_NOTHING
         self.info = {}
         self.valid_symbols = "!@#$%^&*-+=[]{};:|\\?><,./"
@@ -154,12 +164,12 @@ class Tokenizer:
 
     def reset(self):
         self.tk_type = Token.INPUT_END
-        self.text = ''
+        self.text = ""
         self._lno = 0
         self._col = 0
         self.state = ScanContext.IN_NOTHING
         self.info = {}
-    
+
     def mark_end_of_input(self):
         self.add_token(Token.INPUT_END)
 
@@ -184,7 +194,7 @@ class Tokenizer:
     def get_tokens(self):
         return self.tokens
 
-    def add_token(self, tk, s=''):
+    def add_token(self, tk, s=""):
         new_tk = TokenItem(tk, s)
         if tk != Token.INPUT_END:
             new_tk.set_meta(self._lno, self._col)
@@ -196,9 +206,9 @@ class Tokenizer:
             self.add_token(self.tk_type, self.text)
 
     def did_handle_undetermined(self, char):
-        if char == '(':
+        if char == "(":
             self.add_token(Token.LIST_BEGIN)
-        elif char == ')':
+        elif char == ")":
             self.add_token(Token.LIST_END)
         elif self.issymbol(char):
             self.state = ScanContext.IN_SYMBOL
@@ -226,12 +236,12 @@ class Tokenizer:
         return True
 
     def did_handle_quoted(self, char, closing_char):
-        if 'is_raw' in self.info:
+        if "is_raw" in self.info:
             self.text = self.text + char
-            del self.info['is_raw']
+            del self.info["is_raw"]
             return True
-        if char == '\\':
-            self.info['is_raw'] = True
+        if char == "\\":
+            self.info["is_raw"] = True
             return True
         if char == closing_char:
             self.emit_token()
@@ -240,13 +250,13 @@ class Tokenizer:
         return True
 
     def did_handle_text(self, char):
-        if char.isalpha() or self.isnumeric(char) or (char == '_'):
+        if char.isalpha() or self.isnumeric(char) or (char == "_"):
             self.text = self.text + char
         else:
             self.emit_token()
             return False
         return True
-        
+
     def did_handle_symbol(self, char):
         if self.issymbol(char):
             self.text = self.text + char
@@ -254,16 +264,16 @@ class Tokenizer:
             self.emit_token()
             return False
         return True
-        
+
     def did_handle_numeric(self, char):
         if self.isnumeric(char):
             self.text = self.text + char
             return True
-        if (self.text == '0') and (char == 'x'):
-            self.info['is_hex'] = True
-            self.info['is_exp'] = False # prevent confusion with 'E' or 'e'
+        if (self.text == "0") and (char == "x"):
+            self.info["is_hex"] = True
+            self.info["is_exp"] = False  # prevent confusion with 'E' or 'e'
             return True
-        if 'is_hex' in self.info:
+        if "is_hex" in self.info:
             if self.ishexdigit(char):
                 self.text = self.text + char
                 return True
@@ -271,28 +281,28 @@ class Tokenizer:
                 self.emit_token()
                 return False
 
-        if (char == 'e') or (char == 'E'):
-            if 'is_exp' not in self.info:
-                if 'seen_dot' in self.info:
-                    del self.info['seen_dot']
-                self.info['is_exp'] = True
-                self.text = self.text + 'e' # normalize by converting 'E' to 'e'
+        if (char == "e") or (char == "E"):
+            if "is_exp" not in self.info:
+                if "seen_dot" in self.info:
+                    del self.info["seen_dot"]
+                self.info["is_exp"] = True
+                self.text = self.text + "e"  # normalize by converting 'E' to 'e'
                 return True
             else:
                 self.emit_token()
                 return False
-        
-        if char == '.':
-            if 'seen_dot' not in self.info:
-                self.info['seen_dot'] = True
+
+        if char == ".":
+            if "seen_dot" not in self.info:
+                self.info["seen_dot"] = True
                 self.text = self.text + char
                 return True
             else:
                 self.emit_token()
                 return False
 
-        if (char == '-') or (char == '+'):
-            if self.text.endswith('e'):
+        if (char == "-") or (char == "+"):
+            if self.text.endswith("e"):
                 self.text = self.text + char
             else:
                 self.emit_token()
@@ -324,12 +334,14 @@ class Tokenizer:
             print('Unknown state: "%s"' % state.name)
         return True
 
+
 # ----------------------------------------------------------------------
 # End class Tokekenizer
 # ----------------------------------------------------------------------
 
+
 # tk: Tokenizer
-def tokenize_line(tk, lno, char_iter):    
+def tokenize_line(tk, lno, char_iter):
 
     # tk.add_token(Token.LINE_BEGIN, str(lno))
 
@@ -348,7 +360,8 @@ def tokenize_line(tk, lno, char_iter):
 
     tk.set_meta(lno, col + 1)
     tk.add_token(Token.LINE_END)
-    #return tk.get_tokens()
+    # return tk.get_tokens()
+
 
 def tokenize_program(file_path):
     should_join = False
@@ -363,9 +376,9 @@ def tokenize_program(file_path):
             more_tokens = tokenize_line(tk, lno, char_iter)
 
     lx = len(all_lines)
-    suffix = 's'
+    suffix = "s"
     if lx == 1:
-        suffix = ''
+        suffix = ""
     print('Processed %d line%s from "%s"' % (lx, suffix, file_path))
     print("")
 
