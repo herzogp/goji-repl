@@ -1,25 +1,24 @@
 from typing import Union, cast
 
-from parser.rules import (
+from gojiparse.rules import (
     BindingPower,
     RuleProvider,
     NullRule,
     LeftRule,
-    StatementRule,
+    # StatementRule,
 )
-
-from parser.symbols import (
-    symtoken_for_identifier,
+from gojiparse.symbols import (
+    # symtoken_for_identifier,
     SymbolType,
     SymToken,
 )
+from gojiparse.parser import Parser
 
-from ast.statements import (
+from gojiast.statements import (
     BlockStmt,
     ExpressionStmt,
 )
-
-from ast.expressions import (
+from gojiast.expressions import (
     IntegerExpr,
     FloatExpr,
     BoolExpr,
@@ -30,13 +29,10 @@ from ast.expressions import (
     FunctionDefExpr,
     ParamsExpr,
 )
+from gojiast.interfaces import Expr
 
 
-from ast.interfaces import Expr
-
-from parser.parser import Parser
-
-from logging import (
+from runtime.logging import (
     print_info,
     print_note,
     print_warning,
@@ -168,6 +164,7 @@ def parse_fn_def(p: Parser, sym: SymToken) -> Union[Expr, None]:
     p.skip_over(SymbolType.OP_ASSIGN)
     p.skip_many(SymbolType.LINE_END)
 
+    # pylint: disable=fixme
     # TODO: Use something other than parse_expr() here
     body = parse_expr(p, BindingPower.DEFAULT_BP)
     if body is None:
@@ -246,7 +243,7 @@ def parse_primary_expr(p: Parser) -> Union[Expr, None]:
 # Parser -> ast.Expr -> BindingPower -> ast.Expr
 # and advances the parser position
 def parse_binary_expr(
-    p: Parser, left_expr: Expr, left_bp: BindingPower
+    p: Parser, left_expr: Expr, _left_bp: BindingPower
 ) -> Union[BinaryExpr, None]:
     operator = p.current_token()
     if operator is None:
@@ -266,6 +263,8 @@ def parse_binary_expr(
 
 # Parser -> BindingPower -> ast.Expr
 # bp is highest value bp seen so far
+# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-branches
 def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     if p.show_parsing:
         print_info("")
@@ -322,7 +321,7 @@ def parse_expr(p: Parser, overall_bp: BindingPower) -> Union[Expr, None]:
     # operator with the highest binding power seen so far
     # for something like "10 + 4" this will fast forward to the 4,
     # but
-    while next_bp != None and (next_bp.value > overall_bp.value):
+    while next_bp is not None and (next_bp.value > overall_bp.value):
 
         left_rule = rp.left_rule_for_token_type(symtok.symtype)
         if left_rule is None:
@@ -366,10 +365,7 @@ def parse_assignment_expr(
         return None
     if not isinstance(left_expr, IdentifierExpr):
         return None
-        # print("?? IdentifierExpr ?? ", left_expr)
-        # id_name_symtoken = symtoken_for_identifier('_')
-    else:
-        id_name_symtoken = left_expr.name
+    id_name_symtoken = left_expr.name
     expr_node = AssignmentExpr(id_name_symtoken, rhs)
     return expr_node
 

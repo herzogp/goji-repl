@@ -1,8 +1,7 @@
 from typing import Union, cast
 
-from ast.interfaces import Expr, Stmt
-
-from ast.expressions import (
+from gojiast.interfaces import Expr, Stmt
+from gojiast.expressions import (
     AssignmentExpr,
     IdentifierExpr,
     BinaryExpr,
@@ -13,21 +12,19 @@ from ast.expressions import (
     BaseExpr,
     FunctionDefExpr,
 )
-
-from parser.symbols import (
-    SymbolType,
-    SymToken,
-    symtoken_for_numeric,
+from gojiast.statements import (
+    ExpressionStmt,
 )
 
-from ast.statements import (
-    ExpressionStmt,
+
+from gojiparse.symbols import (
+    SymbolType,
+    symtoken_for_numeric,
 )
 
 from runtime.env import (
     EnvItem,
     EnvTable,
-    nil_expr,
 )
 
 
@@ -55,7 +52,7 @@ class NumericOperands:
                 self._right_float = float(cast(int, rightval))
             else:
                 print("Type mismatch: %s + %s" % (lhs, rhs))
-                return None
+                return
         else:
             self._are_float = False
             self._are_valid = False
@@ -90,42 +87,39 @@ class NumericOperands:
 
 
 def eval_expr(env: EnvTable, expr: Expr) -> Union[Expr, None]:
+    result = None
     if isinstance(expr, AssignmentExpr):
         result = eval_expr(env, expr.rhs)
-        if result is None:
-            return None
-        ident_sym = expr.ident
-        item_name = ident_sym.as_str("_")
-        item = EnvItem(item_name, result)
-        env.set_item(item)
-        return result
+        if not result is None:
+            ident_sym = expr.ident
+            item_name = ident_sym.as_str("_")
+            item = EnvItem(item_name, result)
+            env.set_item(item)
     elif isinstance(expr, IntegerExpr):
-        return expr
+        result = expr
     elif isinstance(expr, FloatExpr):
-        return expr
+        result = expr
     elif isinstance(expr, StringExpr):
-        return expr
+        result = expr
     elif isinstance(expr, BoolExpr):
-        return expr
+        result = expr
     elif isinstance(expr, FunctionDefExpr):
         name_sym = expr.name
         item_name = name_sym.as_str("_")
         item = EnvItem(item_name, expr)
         env.set_item(item)
-        return expr  # nil_expr
+        result = expr
     elif isinstance(expr, IdentifierExpr):
         name_sym = expr.name
         item_name = name_sym.as_str("_")
         maybe_item = env.get_item(item_name)
-        if maybe_item is None:
-            return None
-        return maybe_item.value
+        if not maybe_item is None:
+            result = maybe_item.value
     elif isinstance(expr, BinaryExpr):
-        return eval_binary_expr(env, expr)
+        result = eval_binary_expr(env, expr)
     else:
         print("Another expr named: %s" % type(expr))
-        return None
-    return None
+    return result
 
 
 def add_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
@@ -134,17 +128,18 @@ def add_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
         print("Incompatible operands: %s and %s" % (lhs, rhs))
         return None
 
+    result = None
     if operands.are_integer:
         int_result = operands.left_int + operands.right_int
         print("Add values: %d + %d" % (operands.left_int, operands.right_int))
-        return IntegerExpr(symtoken_for_numeric(int_result))
+        result = IntegerExpr(symtoken_for_numeric(int_result))
     elif operands.are_float:
         float_result = operands.left_float + operands.right_float
         print("Add values: %g + %g" % (operands.left_float, operands.right_float))
-        return FloatExpr(symtoken_for_numeric(float_result))
+        result = FloatExpr(symtoken_for_numeric(float_result))
     else:
         print("Operands not supported: %s and %s" % (lhs, rhs))
-        return None
+    return result
 
 
 def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
@@ -153,17 +148,18 @@ def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
         print("Incompatible operands: %s and %s" % (lhs, rhs))
         return None
 
+    result = None
     if operands.are_integer:
         int_result = operands.left_int * operands.right_int
         print("Multiply values: %d * %d" % (operands.left_int, operands.right_int))
-        return IntegerExpr(symtoken_for_numeric(int_result))
+        result = IntegerExpr(symtoken_for_numeric(int_result))
     elif operands.are_float:
         float_result = operands.left_float * operands.right_float
         print("Multiply values: %g * %g" % (operands.left_float, operands.right_float))
-        return FloatExpr(symtoken_for_numeric(float_result))
+        result = FloatExpr(symtoken_for_numeric(float_result))
     else:
         print("Operands not supported: %s and %s" % (lhs, rhs))
-        return None
+    return result
 
 
 def eval_binary_expr(env: EnvTable, expr: BinaryExpr) -> Union[Expr, None]:
@@ -178,26 +174,25 @@ def eval_binary_expr(env: EnvTable, expr: BinaryExpr) -> Union[Expr, None]:
     lhs = cast(BaseExpr, maybe_lhs)
     rhs = cast(BaseExpr, maybe_rhs)
 
+    result = None
     if opsym == SymbolType.OP_ADD:
-        return add_exprs(lhs, rhs)
-
+        result = add_exprs(lhs, rhs)
     elif opsym == SymbolType.OP_MULTIPLY:
-        return multiply_exprs(lhs, rhs)
-
+        result = multiply_exprs(lhs, rhs)
     else:
         print("Unexpected operator: %s" % opsym.name)
-        return None
+    return result
 
 
-def eval_other(env: EnvTable, stmt: Stmt) -> None:
+def eval_other(_env: EnvTable, stmt: Stmt) -> None:
     stmt_line = 0
     print("Evaluating [%2d] %s" % (stmt_line, stmt))
-    return None
 
 
 def eval_stmt(env: EnvTable, stmt: Stmt) -> Union[Expr, None]:
+    result = None
     if isinstance(stmt, ExpressionStmt):
-        return eval_expr(env, stmt.expression)
+        result = eval_expr(env, stmt.expression)
     else:
         eval_other(env, stmt)
-        return None
+    return result

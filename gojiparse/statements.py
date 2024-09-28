@@ -2,34 +2,30 @@
 
 from typing import Union
 
-from parser.rules import (
+from gojiparse.rules import (
     RuleProvider,
     BindingPower,
-    StmtHandler,
+    # StmtHandler,
     StatementRule,
 )
 
-from logging import (
+from gojiparse.parser import Parser
+from gojiparse.symbols import SymbolType
+from gojiparse.expressions import parse_expr
+
+
+from runtime.logging import (
     print_info,
-    print_note,
-    print_warning,
+    # print_note,
+    # print_warning,
     print_error,
 )
 
-from parser.expressions import (
-    parse_expr,
-)
-
-from ast.statements import (
+from gojiast.statements import (
     ExpressionStmt,
     BlockStmt,
 )
-
-from ast.interfaces import Stmt
-
-from parser.driver import Parser
-
-from parser.symbols import SymbolType
+from gojiast.interfaces import Stmt
 
 
 # Parser -> ast.Stmt

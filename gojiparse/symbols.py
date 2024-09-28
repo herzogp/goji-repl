@@ -47,11 +47,30 @@ class SymbolType(Enum):
     LITERAL_NIL = 2000
 
 
+all_symbols = {
+    "+": SymbolType.OP_ADD,
+    "-": SymbolType.OP_SUBTRACT,
+    "*": SymbolType.OP_MULTIPLY,
+    "/": SymbolType.OP_DIVIDE,
+    "%": SymbolType.OP_MODULO,
+    "=": SymbolType.OP_ASSIGN,
+    "(": SymbolType.LEFT_PAREN,
+    ")": SymbolType.RIGHT_PAREN,
+    "[": SymbolType.LEFT_BRACKET,
+    "]": SymbolType.RIGHT_BRACKET,
+    "{": SymbolType.LEFT_BRACE,
+    "}": SymbolType.RIGHT_BRACE,
+    ",": SymbolType.COMMA,
+    "": SymbolType.LITERAL_NIL,
+}
+
+
 # _typ : SymbolType
 # _val : native repr
 # _lno : source line number
 # _col : source column number
 class SymToken:
+    # pylint: disable=too-many-branches
     def __init__(self, token_item) -> None:
         self._val: Any = None
         token_val = token_item.value
@@ -92,35 +111,9 @@ class SymToken:
 
         elif token_item.is_symbol():
             self._val = token_val
-            if token_val == "+":
-                self._typ = SymbolType.OP_ADD
-            elif token_val == "-":
-                self._typ = SymbolType.OP_SUBTRACT
-            elif token_val == "*":
-                self._typ = SymbolType.OP_MULTIPLY
-            elif token_val == "/":
-                self._typ = SymbolType.OP_DIVIDE
-            elif token_val == "%":
-                self._typ = SymbolType.OP_MODULO
-            elif token_val == "=":
-                self._typ = SymbolType.OP_ASSIGN
-            elif token_val == "(":
-                self._typ = SymbolType.LEFT_PAREN
-            elif token_val == ")":
-                self._typ = SymbolType.RIGHT_PAREN
-            elif token_val == "[":
-                self._typ = SymbolType.LEFT_BRACKET
-            elif token_val == "]":
-                self._typ = SymbolType.RIGHT_BRACKET
-            elif token_val == "{":
-                self._typ = SymbolType.LEFT_BRACE
-            elif token_val == "}":
-                self._typ = SymbolType.RIGHT_BRACE
-            elif token_val == ",":
-                self._typ = SymbolType.COMMA
-            elif token_val == "":
-                print("created a nil SymToken")
-                self._typ = SymbolType.LITERAL_NIL
+            maybe_type = all_symbols.get(token_val)
+            if not maybe_type is None:
+                self._typ = maybe_type
             # ----------------------------------------------------------------------
             # elif other symbols from this list of 16:
             # ! @ # $ ^ & ; : | \\ ? > < , .

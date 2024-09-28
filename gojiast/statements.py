@@ -1,4 +1,4 @@
-from ast.interfaces import Expr, Stmt
+from gojiast.interfaces import Expr, Stmt
 
 
 class BlockStmt(Stmt):
@@ -7,11 +7,10 @@ class BlockStmt(Stmt):
 
     @property
     def line(self) -> int:
-        if len(self._stmts) == 0:
-            return 0
-        else:
-            first_stmt = self._stmts[0]
-            return first_stmt.line
+        line_no = 0
+        if len(self._stmts) > 0:
+            line_no = self._stmts[0]
+        return line_no
 
     def stmt(self) -> None:
         return None

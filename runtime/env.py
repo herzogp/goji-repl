@@ -1,14 +1,14 @@
 from __future__ import annotations
 from typing import Union, Any, cast
 
-from ast.interfaces import Expr
+from gojiast.interfaces import Expr
 
-from ast.expressions import (
+from gojiast.expressions import (
     BaseExpr,
     NilExpr,
 )
 
-from parser.symbols import (
+from gojiparse.symbols import (
     nil_symtoken,
 )
 
@@ -108,7 +108,7 @@ class EnvTable:
         print("Creating item: %s" % new_item)
         self.table.append(new_item)
 
-    def hasTopLevelValue(self, item_name: str) -> bool:
+    def has_top_level_value(self, item_name: str) -> bool:
         if item_name == "nil":
             return True
         for old_item in self.table:

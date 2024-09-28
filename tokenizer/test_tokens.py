@@ -1,4 +1,3 @@
-import itertools
 import pytest
 
 from tokenizer.tokens import (
@@ -8,7 +7,7 @@ from tokenizer.tokens import (
 )
 
 from tokenizer.tools import (
-    lines_to_process,
+    # lines_to_process,
     show_token_diff,
     # show_tokens,
 )
@@ -83,9 +82,11 @@ def basic_tokens():
 
 
 #  Test the tokenizer
+# pylint: disable=too-few-public-methods
 class TestTokenizer:
+    # pylint: disable=redefined-outer-name
     def test_basic_tokenizer(self, basic_tokens):
-        all_tokens, all_lines = tokenize_program("testdata/prog.ph")
+        all_tokens, _all_lines = tokenize_program("testdata/prog.ph")
         # ----------------------------------------------------------------------
         # To always see stdout output invoke as `pytest -s`
         # Remember to import show_tokens at the top of this file

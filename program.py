@@ -1,10 +1,14 @@
 from enum import Enum
 
-from parser.driver import (
-    pratt_parse_program,
+from gojiparse.driver import pratt_parse_program
+from gojiparse.symbols import (
+    symtoken_for_numeric,
+    symtoken_for_text,
+    symtoken_for_identifier,
 )
 
-from ast.expressions import (
+
+from gojiast.expressions import (
     StringExpr,
     IntegerExpr,
     BoolExpr,
@@ -21,12 +25,6 @@ from runtime.eval import (
     eval_stmt,
 )
 
-from parser.symbols import (
-    symtoken_for_numeric,
-    symtoken_for_text,
-    symtoken_for_identifier,
-)
-
 
 class EngineVersion(Enum):
     V0_2_0 = 10
@@ -40,16 +38,13 @@ def run_program(options: GojiOptions) -> None:
 
     # Add the engine version
     name_val = EngineVersion.V0_2_0.name
-    # builtin = EnvItem('engineVersion-name', make_atom_node(Token.QTEXT, EngineVersion.V0_2_0.name))
-    builtin = EnvItem(
-        "engineVersion-name", StringExpr(symtoken_for_text(EngineVersion.V0_2_0.name))
-    )
+    builtin = EnvItem("engineVersion-name", StringExpr(symtoken_for_text(name_val)))
     program_env.set_item(builtin)
 
     this_val = EngineVersion.V0_2_0.value
     builtin = EnvItem(
         "engineVersion-id",
-        IntegerExpr(symtoken_for_numeric(str(EngineVersion.V0_2_0.value))),
+        IntegerExpr(symtoken_for_numeric(str(this_val))),
     )
     program_env.set_item(builtin)
 
@@ -66,7 +61,7 @@ def run_program(options: GojiOptions) -> None:
     all_statements, all_lines = pratt_parse_program(program_file, options)
 
     # Time to evaluate
-    if all_statements == None:
+    if all_statements is None:
         print("Nothing to evaluate")
     else:
         # print("%d statements will be evaluated" % len(all_statements))

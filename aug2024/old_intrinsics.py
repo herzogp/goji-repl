@@ -25,7 +25,7 @@ def num_args_for_op(op):
 # nam is a primitive/native TEXT
 # atom must support isinteger(), isfloat(), isstring(), isbool() and get_value()
 def define_item(environment, nam, atom):
-    does_exist = environment.hasTopLevelValue(nam)
+    does_exist = environment.has_top_level_value(nam)
     if does_exist:
         print("%s is immutable - should not be modifying it" % nam)
         return environment.get_item(nam)

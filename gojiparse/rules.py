@@ -1,9 +1,9 @@
 from typing import Union, Callable, cast, Any
 from enum import Enum
 
-from ast.interfaces import Expr, Stmt
+from gojiast.interfaces import Expr, Stmt
 
-from parser.symbols import SymbolType
+from gojiparse.symbols import SymbolType
 
 
 class BindingPower(Enum):

@@ -1,4 +1,3 @@
-import os
 import itertools
 from enum import Enum
 
@@ -68,12 +67,7 @@ class TokenItem:
         return self._col
 
     def has_value(self):
-        return (
-            self.t == Token.TEXT
-            or self.t == Token.QTEXT
-            or self.t == Token.SYMBOL
-            or self.t == Token.NUMERIC
-        )
+        return self.t in (Token.TEXT, Token.QTEXT, Token.SYMBOL, Token.NUMERIC)
 
     def is_numeric(self):
         return self.t == Token.NUMERIC
@@ -110,8 +104,7 @@ class TokenItem:
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.__dict__ == other.__dict__
-        else:
-            return False
+        return False
 
 
 def tokenitem_for_numeric(val):
@@ -147,7 +140,7 @@ class ScanContext(Enum):
 # }
 # ----------------------------------------------------------------------
 class Tokenizer:
-
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.tk_type = Token.INPUT_END
         self.text = ""
@@ -266,73 +259,67 @@ class Tokenizer:
         return True
 
     def did_handle_numeric(self, char):
+        did_handle = False
         if self.isnumeric(char):
             self.text = self.text + char
-            return True
+            did_handle = True
+
         if (self.text == "0") and (char == "x"):
             self.info["is_hex"] = True
             self.info["is_exp"] = False  # prevent confusion with 'E' or 'e'
-            return True
+            did_handle = True
+
         if "is_hex" in self.info:
             if self.ishexdigit(char):
                 self.text = self.text + char
-                return True
-            else:
-                self.emit_token()
-                return False
+                did_handle = True
 
-        if (char == "e") or (char == "E"):
+        elif char in ("e", "E"):
             if "is_exp" not in self.info:
                 if "seen_dot" in self.info:
                     del self.info["seen_dot"]
                 self.info["is_exp"] = True
                 self.text = self.text + "e"  # normalize by converting 'E' to 'e'
-                return True
-            else:
-                self.emit_token()
-                return False
+                did_handle = True
 
-        if char == ".":
+        elif char == ".":
             if "seen_dot" not in self.info:
                 self.info["seen_dot"] = True
                 self.text = self.text + char
-                return True
-            else:
-                self.emit_token()
-                return False
+                did_handle = True
 
-        if (char == "-") or (char == "+"):
+        elif char in ("-", "+"):
             if self.text.endswith("e"):
                 self.text = self.text + char
-            else:
-                self.emit_token()
-                return False
+                did_handle = True
 
-        self.emit_token()
-        return False
+        if not did_handle:
+            self.emit_token()
+        return did_handle
 
     def set_meta(self, line, col):
         self._lno = line
         self._col = col
 
     def did_handle_char(self, char, lno, col):
+        did_handle = True
         state = self.state
         if state == ScanContext.IN_NOTHING:
             self.set_meta(lno, col)
-            return self.did_handle_undetermined(char)
+            did_handle = self.did_handle_undetermined(char)
         elif state == ScanContext.IN_DOUBLE_QUOTE:
-            return self.did_handle_quoted(char, self.double_quote)
+            did_handle = self.did_handle_quoted(char, self.double_quote)
         elif state == ScanContext.IN_SINGLE_QUOTE:
-            return self.did_handle_quoted(char, self.single_quote)
+            did_handle = self.did_handle_quoted(char, self.single_quote)
         elif state == ScanContext.IN_SYMBOL:
-            return self.did_handle_symbol(char)
+            did_handle = self.did_handle_symbol(char)
         elif state == ScanContext.IN_TEXT:
-            return self.did_handle_text(char)
+            did_handle = self.did_handle_text(char)
         elif state == ScanContext.IN_NUMERIC:
-            return self.did_handle_numeric(char)
+            did_handle = self.did_handle_numeric(char)
         else:
             print('Unknown state: "%s"' % state.name)
-        return True
+        return did_handle
 
 
 # ----------------------------------------------------------------------
@@ -360,7 +347,6 @@ def tokenize_line(tk, lno, char_iter):
 
     tk.set_meta(lno, col + 1)
     tk.add_token(Token.LINE_END)
-    # return tk.get_tokens()
 
 
 def tokenize_program(file_path):
@@ -373,7 +359,7 @@ def tokenize_program(file_path):
         print("[%4d] %s" % (lno, line))
         if not line.startswith("//") and len(line) > 0:
             char_iter = itertools.islice(line, 0, None)
-            more_tokens = tokenize_line(tk, lno, char_iter)
+            tokenize_line(tk, lno, char_iter)
 
     lx = len(all_lines)
     suffix = "s"

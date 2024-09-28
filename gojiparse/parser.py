@@ -2,13 +2,13 @@ from typing import Union
 
 from options import GojiOptions
 
-from parser.symbols import (
+from gojiparse.symbols import (
     SymbolType,
     SymToken,
     # symbolized,
 )
 
-from parser.rules import RuleProvider
+from gojiparse.rules import RuleProvider
 
 
 class Parser:
@@ -75,20 +75,19 @@ class Parser:
         if symtok is None:
             if err_msg == "":
                 err_msg = "[S1] End of Tokens - unable to skip_one()"
-            raise Exception(err_msg)
-        elif symtok.is_input_end():
+            raise ValueError(err_msg)
+        if symtok.is_input_end():
             self.advance()
         elif symtok.symtype != type_to_skip:
             if err_msg == "":
                 err_msg = "[S1] Expected %s - saw %s" % (type_to_skip.name, symtok)
-            raise Exception(err_msg)
+            raise ValueError(err_msg)
         if self.show_parsing:
             print("[S1] Did successfully skip %s" % type_to_skip)
         self.advance()
         if self.show_parsing:
             print("[S1] Now advanced to %s" % self.current_token())
             print("")
-        return None
 
     def skip_many(self, type_to_skip: SymbolType) -> None:
         if self.show_parsing:
@@ -111,7 +110,6 @@ class Parser:
                 self.advance()
         if self.show_parsing:
             print("[SM] skip_many advanced to %s" % self.current_token())
-        return
 
     def skip_over(self, type_to_skip: SymbolType, err_msg="") -> None:
         if self.show_parsing:
@@ -133,18 +131,14 @@ class Parser:
         self.skip_one(type_to_skip, err_msg)
 
     def backup(self) -> None:
-        oldpos = self._pos
         idx = self._pos - 1
         if idx >= 0:
             self._pos = idx
-        return
 
     def advance(self) -> None:
-        oldpos = self._pos
         idx = self._pos + 1
         if idx <= self._ntx:
             self._pos = idx
-        return
 
     def advance_to_sym(self, sym: SymbolType) -> None:
         symtok = self.current_token()

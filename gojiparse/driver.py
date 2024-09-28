@@ -1,5 +1,3 @@
-from typing import Union
-
 from options import GojiOptions
 
 from tokenizer.tokens import (
@@ -7,28 +5,28 @@ from tokenizer.tokens import (
     TokenItem,
 )
 
-from parser.parser import Parser
+from gojiparse.parser import Parser
 
-from parser.symbols import (
-    SymbolType,
-    SymToken,
+from gojiparse.symbols import (
+    # SymbolType,
+    # SymToken,
     symbolized,
 )
 
-from parser.expressions import (
+from gojiparse.expressions import (
     init_expr_rules,
-    parse_primary_expr,
-    parse_binary_expr,
-    parse_assignment_expr,
-    parse_grouping_expr,
+    # parse_primary_expr,
+    # parse_binary_expr,
+    # parse_assignment_expr,
+    # parse_grouping_expr,
 )
 
-from parser.statements import (
+from gojiparse.statements import (
     init_stmt_rules,
     parse_statement,
 )
 
-from ast.interfaces import Stmt
+from gojiast.interfaces import Stmt
 
 
 class FileParser:
@@ -192,10 +190,10 @@ def pratt_parse_program(
     tk_count = len(tokens)
     if tk_count > 0 and options.show_tokens:
         print('%i <Pratt> tokens found in "%s"' % (tk_count, file_path))
-    parseInfo = FileParser(file_path, tokens, all_lines)
+    parse_info = FileParser(file_path, tokens, all_lines)
     if options.show_tokens:
-        parseInfo.show_symtokens()
-    parsed_result = parseInfo.parse(options)
+        parse_info.show_symtokens()
+    parsed_result = parse_info.parse(options)
     if options.show_parsing:
         print("parsing completed")
         print("")

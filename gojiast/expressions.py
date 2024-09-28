@@ -1,16 +1,13 @@
 from typing import Union, cast
 
-from ast.interfaces import Expr, Stmt
+from gojiast.interfaces import Expr, Stmt
 
-from parser.symbols import SymToken, SymbolType
+from gojiparse.symbols import SymToken, SymbolType
 
 
 class BaseExpr(Expr):
     def __init__(self, sym: SymToken) -> None:
         self._sym = sym
-        # TODO:
-        # if not isinstance(sym, SymToken):
-        #     raise Exception("Only SymTokens can be BaseExpr's")
 
     @property
     def line(self) -> int:
@@ -37,41 +34,26 @@ class BaseExpr(Expr):
 
 
 class NilExpr(BaseExpr):
-    def __init__(self, sym: SymToken) -> None:
-        super().__init__(sym)
-
     def __str__(self) -> str:
         return "NilLiteral"
 
 
 class IntegerExpr(BaseExpr):
-    def __init__(self, sym: SymToken) -> None:
-        super().__init__(sym)
-
     def __str__(self) -> str:
         return "IntegerLiteral(%d)" % int(self.exprvalue)
 
 
 class FloatExpr(BaseExpr):
-    def __init__(self, sym: SymToken) -> None:
-        super().__init__(sym)
-
     def __str__(self) -> str:
         return "FloatLiteral(%g)" % float(self.exprvalue)
 
 
 class BoolExpr(BaseExpr):
-    def __init__(self, sym: SymToken) -> None:
-        super().__init__(sym)
-
     def __str__(self) -> str:
         return "BoolLiteral(%s)" % self.exprvalue
 
 
 class StringExpr(BaseExpr):
-    def __init__(self, sym: SymToken) -> None:
-        super().__init__(sym)
-
     def __str__(self) -> str:
         return "StringLiteral('%s')" % self.exprvalue
 
@@ -133,7 +115,7 @@ class ParamsExpr(Expr):
         return len(self._params)
 
     def param_at_index(self, idx) -> Union[None, IdentifierExpr]:
-        if (idx >= 0) and (idx < self.count):
+        if 0 <= idx < self.count:
             return self._params[idx]
         return None
 
