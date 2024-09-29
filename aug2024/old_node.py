@@ -1,26 +1,26 @@
 from enum import Enum
 
-from tokenizer.tokens import(
+from tokenizer.tokens import (
     Token,
     TokenItem,
 )
 
-from aug2024.old_atom import(
-    Atom
-)
+from aug2024.old_atom import Atom
+
 
 class NodeType(Enum):
     ATOM = 1
     LIST = 2
 
-# A Node can be either a single ATOM, 
+
+# A Node can be either a single ATOM,
 # or a LIST (of other Nodes)
 # In either case, this is called an Expression
 class Node:
     def __init__(self, node_typ):
         self._typ = node_typ
         self.exprs = []
-   
+
     # expr is either an Atom or a List
     def add(self, expr):
         self.exprs.append(expr)
@@ -51,7 +51,7 @@ class Node:
         return self._typ == NodeType.LIST
 
     def did_apply_symbol(self, s):
-        if s != '#':
+        if s != "#":
             return False
         atom_val = self.get_value()
         if atom_val == None:
@@ -62,14 +62,16 @@ class Node:
         return len(self.exprs)
 
     def __str__(self):
-        args = ', '.join([str(item) for item in self.exprs])
-        return '#%s(%s)' % (self._typ.name, args)
+        args = ", ".join([str(item) for item in self.exprs])
+        return "#%s(%s)" % (self._typ.name, args)
 
-def make_atom_node(tk_type: Token, tk_val=''):
+
+def make_atom_node(tk_type: Token, tk_val=""):
     node = Node(NodeType.ATOM)
     tk_item = TokenItem(tk_type, tk_val)
     node.add(Atom(tk_item))
     return node
+
 
 def make_node_from_atom(atom):
     node = Node(NodeType.ATOM)

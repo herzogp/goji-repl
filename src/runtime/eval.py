@@ -132,14 +132,14 @@ def add_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
     if operands.are_integer:
         int_result = operands.left_int + operands.right_int
         print("Add values: %d + %d" % (operands.left_int, operands.right_int))
-        result = IntegerExpr(symtoken_for_numeric(int_result))
+        return IntegerExpr(symtoken_for_numeric(int_result))
     elif operands.are_float:
         float_result = operands.left_float + operands.right_float
         print("Add values: %g + %g" % (operands.left_float, operands.right_float))
-        result = FloatExpr(symtoken_for_numeric(float_result))
+        return FloatExpr(symtoken_for_numeric(float_result))
     else:
         print("Operands not supported: %s and %s" % (lhs, rhs))
-    return result
+    return None
 
 
 def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
@@ -152,14 +152,14 @@ def multiply_exprs(lhs: BaseExpr, rhs: BaseExpr) -> Union[Expr, None]:
     if operands.are_integer:
         int_result = operands.left_int * operands.right_int
         print("Multiply values: %d * %d" % (operands.left_int, operands.right_int))
-        result = IntegerExpr(symtoken_for_numeric(int_result))
+        return IntegerExpr(symtoken_for_numeric(int_result))
     elif operands.are_float:
         float_result = operands.left_float * operands.right_float
         print("Multiply values: %g * %g" % (operands.left_float, operands.right_float))
-        result = FloatExpr(symtoken_for_numeric(float_result))
+        return FloatExpr(symtoken_for_numeric(float_result))
     else:
         print("Operands not supported: %s and %s" % (lhs, rhs))
-    return result
+    return None
 
 
 def eval_binary_expr(env: EnvTable, expr: BinaryExpr) -> Union[Expr, None]:

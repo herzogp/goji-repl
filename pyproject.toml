@@ -10,7 +10,7 @@ dependencies = [
 verbose = true
 
 [tool.mypy]
-files = "*.py, runtime, ast, parser, tokenizer"
+files = "src/**/*.py"
 
 [tool.pylint.messages_control]
 disable = "C0114,C0115,C0116,C0209"
@@ -22,6 +22,14 @@ pythonpath = ["src", "tests"]
 requires = ["setuptools>=61.0", "wheel", "Cython"]
 build-backend = "setuptools.build_meta"
 
+# [tool.setuptools]
+# py-modules = ["repl"]
+# [tool.setuptools.packages.find]
+# where = ["."]  # list of folders that contain the packages (["."] by default)
+#include = ["<package name>"]  # package names should match these glob patterns (["*"] by default)
+# exclude = []  # exclude packages matching these glob patterns (empty by default)
+# namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
 [project.scripts]
 # always "message text" t t f t f 
 # always = "assertions:cmd_always"
@@ -30,7 +38,7 @@ build-backend = "setuptools.build_meta"
 # sometimes = "assertions:cmd_sometimes"
 
 # addx 10 17
-# addx = "assertions:add"
+addx = "repl:add"
 
 # subx 100 31
 # subx = "assertions:sub"

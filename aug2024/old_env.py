@@ -1,17 +1,18 @@
-from aug2024.old_node import(
+from aug2024.old_node import (
     Node,
     NodeType,
     make_atom_node,
 )
 
-from aug2024.old_atom import(
+from aug2024.old_atom import (
     Atom,
 )
 
-from tokenizer.tokens import(
+from tokenizer.tokens import (
     Token,
     TokenItem,
 )
+
 
 # EnvItem is a name + Node
 class EnvItem:
@@ -19,14 +20,13 @@ class EnvItem:
         self._name = name
         self._node = node
 
-
     @property
     def name(self):
         return self._name
 
     @property
     def value(self):
-        return self._node.get_value() # returns an Atom or a hierarchical list of Atoms
+        return self._node.get_value()  # returns an Atom or a hierarchical list of Atoms
 
     def isatom(self):
         return self._node.isatom()
@@ -78,7 +78,7 @@ class EnvItem:
     @property
     def value_repr(self):
         if self.isNil():
-            return 'nil'
+            return "nil"
         elif self.islist():
             return str(self.value)
         elif self.isatom():
@@ -88,17 +88,18 @@ class EnvItem:
 
     def __str__(self):
         if self.isNil():
-            return 'nil'
-        return '%s: %s' % (self.name, self.value_repr)
+            return "nil"
+        return "%s: %s" % (self.name, self.value_repr)
+
 
 nil_node = make_atom_node(Token.INPUT_END)
-nil = EnvItem('nil', nil_node)
+nil = EnvItem("nil", nil_node)
 
 
 class EnvTable:
     def __init__(self, parent_env=None):
         self.parent = parent_env
-        self.table = [] # could be a HashMap soon
+        self.table = []  # could be a HashMap soon
         if self.parent != None:
             self.version = self.parent.version
 
@@ -123,7 +124,7 @@ class EnvTable:
         self.table.append(new_item)
 
     def hasTopLevelValue(self, item_name):
-        if item_name == 'nil':
+        if item_name == "nil":
             return True
         for old_item in self.table:
             if old_item.name == item_name:
@@ -131,7 +132,7 @@ class EnvTable:
         return False
 
     def get_item(self, item_name):
-        if item_name == 'nil':
+        if item_name == "nil":
             return nil
         for old_item in self.table:
             if old_item.name == item_name:
@@ -153,7 +154,7 @@ class EnvTable:
         env_item = self.get_item(item_name)
         if env_item.isstring():
             return env_item.value.get_value()
-        return "" 
+        return ""
 
     def get_bool(self, item_name):
         env_item = self.get_item(item_name)

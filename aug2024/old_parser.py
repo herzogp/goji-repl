@@ -1,6 +1,6 @@
 from tokenizer.tokens import (
     tokenize_program,
-    Token, 
+    Token,
     TokenItem,
 )
 
@@ -16,15 +16,14 @@ from aug2024.old_node import (
     make_node_from_atom,
 )
 
-from aug2024.old_env import (
-    nil_node
-)
+from aug2024.old_env import nil_node
 
 INDENT = "    "
 
+
 class Parser:
     def __init__(self):
-        self._filename = ''
+        self._filename = ""
         self._line = 0
         self._nodes_seen = []
 
@@ -59,7 +58,10 @@ class Parser:
             print("%s pop_node() failed - returns None" % INDENT)
             return None
         popped_node = self._nodes_seen.pop()
-        print("%s << didPop: %s, new length: %d" % (INDENT, popped_node, len(self._nodes_seen)))
+        print(
+            "%s << didPop: %s, new length: %d"
+            % (INDENT, popped_node, len(self._nodes_seen))
+        )
         return popped_node
 
     def peek_node(self):
@@ -67,7 +69,7 @@ class Parser:
         if lx < 0:
             return None
         return self._nodes_seen[lx]
-    
+
     def clear_nodes(self):
         suffix = "s"
         lx = len(self._nodes_seen)
@@ -76,7 +78,7 @@ class Parser:
                 suffix = ""
             print("%s >> didClear %d node%s" % (INDENT, lx, suffix))
         self._nodes_seen = []
-    
+
     # parse_atom: TokenItem -> Node
     def parse_atom(self, tk_item):
         if self.has_line_numbers():
@@ -84,27 +86,27 @@ class Parser:
         if tk_item.has_value():
             return make_node_from_atom(Atom(tk_item))
         else:
-            print('%s Fallthru None - parse_atom()' % INDENT)
+            print("%s Fallthru None - parse_atom()" % INDENT)
             return None
-    
+
     # return None if no adjustment is warranted
     # Otherwise, returns the adjusted node
     def symbol_as_builtin(self, maybe_node):
         the_atom = maybe_node.get_value()
         the_atom_val = the_atom.get_value()
         if the_atom.issymbol():
-            if the_atom_val == '=':
-                new_atom = Atom(TokenItem(Token.QTEXT, '=')).asbuiltin()
+            if the_atom_val == "=":
+                new_atom = Atom(TokenItem(Token.QTEXT, "=")).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
                 return new_node
-            elif the_atom_val == '+':
-                new_atom = Atom(TokenItem(Token.QTEXT, '+')).asbuiltin()
+            elif the_atom_val == "+":
+                new_atom = Atom(TokenItem(Token.QTEXT, "+")).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
                 return new_node
-            elif the_atom_val == '*':
-                new_atom = Atom(TokenItem(Token.QTEXT, '*')).asbuiltin()
+            elif the_atom_val == "*":
+                new_atom = Atom(TokenItem(Token.QTEXT, "*")).asbuiltin()
                 new_node = Node(NodeType.ATOM)
                 new_node.add(new_atom)
                 return new_node
@@ -115,17 +117,17 @@ class Parser:
         nx = len(tokens)
         if nx == 0:
             return None
-        node = Node(NodeType.LIST) # should be more like NodeType.EXPR
+        node = Node(NodeType.LIST)  # should be more like NodeType.EXPR
         idx = 0
         tk = tokens[idx]
         while not tk.is_list_end():
             # One of: [IDENT, INTEGER, FLOAT, TEXT, BOOL]
-            if tk.has_value(): 
+            if tk.has_value():
                 new_node = self.parse_atom(tk)
                 if new_node != None:
                     adjusted_node = self.symbol_as_builtin(new_node)
                     node.add(adjusted_node)
-    
+
             # One of: [LPAREN]
             elif tk.is_list_begin():
                 idx = idx + 1
@@ -135,32 +137,32 @@ class Parser:
                     return None
                 sub_list, rest_tokens = maybe_list
                 node.add(sub_list)
-                idx = idx + len(sub_list) # + 1
-            #...
-    
+                idx = idx + len(sub_list)  # + 1
+            # ...
+
             idx = idx + 1
             if idx >= len(tokens):
                 print("%s Unexpected end of list" % INDENT)
                 return None
             tk = tokens[idx]
             # tk_type = tk.t
-    
-        return node, tokens[idx+1:] # should be number of tokens consummed, not [1:]
-   
+
+        return node, tokens[idx + 1 :]  # should be number of tokens consummed, not [1:]
+
     def parse_expr(self, tokens):
         # print("ENTERED parse_expr")
         # should see an Atom followed by LINE_END, or BINARY_OP or ASSIGN_OP
-        # could see a LINE_BEGIN or a LINE_END anywhere 
+        # could see a LINE_BEGIN or a LINE_END anywhere
         if len(tokens) == 0:
-            print('%s no more tokens' % INDENT)
+            print("%s no more tokens" % INDENT)
             return None
-    
+
         # Make sure we have an actual Token
         tk = tokens[0]
         if tk is None:
-            print('%s token is <None>' % INDENT)
+            print("%s token is <None>" % INDENT)
             return None
-    
+
         elif tk.is_line_end():
             self.clear_nodes()
             print(INDENT)
@@ -179,7 +181,7 @@ class Parser:
             maybe_node = self.parse_atom(tk)
             if maybe_node != None:
                 adjusted_node = self.symbol_as_builtin(maybe_node)
-                # If this atom is a BINARY_OP, 
+                # If this atom is a BINARY_OP,
                 # establish a new Node,
                 # pop its left argument from the node stack
                 # append its right argument from the tokens ahead
@@ -188,21 +190,27 @@ class Parser:
                 print("%s the_atom: " % INDENT, the_atom)
                 if the_atom.isfunction():
                     if the_atom_val == Builtin.OP_ASSIGN:
-                        print('%s Found an assignment operator' % INDENT)
+                        print("%s Found an assignment operator" % INDENT)
                         # establish a new node
-                        node = Node(NodeType.LIST) # should be more like NodeType.EXPR
+                        node = Node(NodeType.LIST)  # should be more like NodeType.EXPR
                         node.add(adjusted_node)
 
                         # pop left arg from stack (error if cant pop)
                         left_node = self.pop_node()
                         if left_node == None:
-                            print("%s ERROR: No L-value provided for assignment %s: [%2d]" % (INDENT, self.filename, self.line))
+                            print(
+                                "%s ERROR: No L-value provided for assignment %s: [%2d]"
+                                % (INDENT, self.filename, self.line)
+                            )
                             # return None
                             return nil_node, tokens[1:]
                         else:
                             print("%s LEFT_NODE was: " % INDENT, left_node)
                         node.add(left_node)
-                        print("%s TRY TO GET RIGHT_NODE for line [%2d]" % (INDENT, self.line))
+                        print(
+                            "%s TRY TO GET RIGHT_NODE for line [%2d]"
+                            % (INDENT, self.line)
+                        )
                         parse_result = self.parse_expr(tokens[1:])
                         if parse_result != None:
                             right_node, more_tokens = parse_result
@@ -215,7 +223,7 @@ class Parser:
                             # return None
                 self.push_node(maybe_node)
                 return self.parse_expr(tokens[1:])
-    
+
             # Update line info when provided
             # Must be a LIST - better check anyway
             elif tk.is_list_begin():
@@ -224,22 +232,21 @@ class Parser:
                 return self.parse_list(tokens[1:])
             else:
                 if not tk is None:
-                    print('%s Unexpected?: ' % INDENT, str(tk))
-                print('%s Exhausted parse_expr - returning None' % INDENT)
+                    print("%s Unexpected?: " % INDENT, str(tk))
+                print("%s Exhausted parse_expr - returning None" % INDENT)
                 return None
-        
-        
+
     # parse_node: Stream<TokenItem> -> Node
     def parse_node(self, tokens):
         print("ENTERED parse_node")
         if len(tokens) == 0:
             return None
-    
+
         # Make sure we have an actual Token
         tk = tokens[0]
         if tk is None:
             return None
-    
+
         elif tk.is_line_end():
             lx = len(tokens)
             if lx > 1:
@@ -257,7 +264,7 @@ class Parser:
             if maybe_node != None:
                 adjusted_node = self.symbol_as_builtin(maybe_node)
                 return adjusted_node, tokens[1:]
-    
+
             # Update line info when provided
             # Must be a LIST - better check anyway
             elif tk.is_list_begin():
@@ -266,8 +273,9 @@ class Parser:
                 return self.parse_list(tokens[1:])
             else:
                 if not tk is None:
-                    print('Unexpected?(a): ', tk)
+                    print("Unexpected?(a): ", tk)
                 return None
+
 
 # parse_program: FilePath -> Node[]
 def new_parse_program(file_path):
@@ -282,7 +290,7 @@ def new_parse_program(file_path):
     parsed_result = parseInfo.parse_expr(tokens)
     if parsed_result == None:
         print("%s 1a. parse_expr() returned: None" % INDENT)
-        print('%s %d tokens provided to parse_expr' % (INDENT, len(tokens)))
+        print("%s %d tokens provided to parse_expr" % (INDENT, len(tokens)))
     else:
         print("%s 1b. parse_expr() returned: " % INDENT, parsed_result[0])
     while parsed_result != None:
@@ -294,6 +302,7 @@ def new_parse_program(file_path):
         all_nodes.append(node)
         parsed_result = parseInfo.parse_expr(tokens)
     return all_nodes
+
 
 def parse_program(file_path):
     tokens, all_lines = tokenize_program(file_path)
